@@ -11,82 +11,38 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
-int readShaderSource(GLuint shader, const char *file)
-{
-  FILE *fp;
-  const GLchar *source;
-  GLsizei length;
-  int ret;
+void CheckError() {
+    GLenum err = glGetError();
 
-  fp = fopen(file, "rb");
-  if (fp == NULL) {
-    perror(file);
-    return -1;
-  }
 
-  fseek(fp, 0L, SEEK_END);
-  length = ftell(fp);
-
-  source = (GLchar *)malloc(length);
-  if (source == NULL) {
-    fprintf(stderr, "Could not allocate read buffer.\n");
-    return -1;
-  }
-
-  fseek(fp, 0L, SEEK_SET);
-  ret = fread((void *)source, 1, length, fp) != (size_t)length;
-  fclose(fp);
-
-  if (ret)
-    fprintf(stderr, "Could not read file: %s.\n", file);
-  else
-    glShaderSource(shader, 1, &source, &length);
-
-  free((void *)source);
-
-  return ret;
+    if ( err != GL_NO_ERROR ) {
+        printf( "OpenGL ERROR code %d:\n", err);
+    }
 }
 
-void printShaderInfoLog(GLuint shader)
-{
-  GLsizei bufSize;
+GLFWwindow* InitGLFW(int width, int height) {
+    printf("Initialize GLFW\n");
+    if (glfwInit() == GL_FALSE){
 
-  glGetShaderiv(shader, GL_INFO_LOG_LENGTH , &bufSize);
-
-  if (bufSize > 1) {
-    GLchar *infoLog = (GLchar *)malloc(bufSize);
-
-    if (infoLog != NULL) {
-      GLsizei length;
-
-      glGetShaderInfoLog(shader, bufSize, &length, infoLog);
-      fprintf(stderr, "InfoLog:\n%s\n\n", infoLog);
-      free(infoLog);
+        std::cerr << "Can't initialize GLFW" << std::endl;
+        exit(-1);
     }
-    else
-      fprintf(stderr, "Could not allocate InfoLog buffer.\n");
-  }
-}
 
-void printProgramInfoLog(GLuint program)
-{
-  GLsizei bufSize;
+    atexit(glfwTerminate);
 
-  glGetProgramiv(program, GL_INFO_LOG_LENGTH , &bufSize);
 
-  if (bufSize > 1) {
-    GLchar *infoLog = (GLchar *)malloc(bufSize);
-
-    if (infoLog != NULL) {
-      GLsizei length;
-
-      glGetProgramInfoLog(program, bufSize, &length, infoLog);
-      fprintf(stderr, "InfoLog:\n%s\n\n", infoLog);
-      free(infoLog);
+    GLFWwindow * const window(glfwCreateWindow(/* int           width   = */ width,
+                                               /* int           height  = */ height,
+                                               /* const char  * title   = */ "Fractal",
+                                               /* GLFWmonitor * monitor = */ NULL,
+                                               /* GLFWwindow  * share   = */ NULL));
+    if (window == NULL){
+        std::cerr << "Can't create GLFW window." << std::endl;
+        exit(-1);
     }
-    else
-      fprintf(stderr, "Could not allocate InfoLog buffer.\n");
-  }
+
+    glfwMakeContextCurrent(/* GLFWwindow *  window = */ window);
+    return window;
 }
 
 // LoadShader and LinkShader functions are from exrview
@@ -157,19 +113,210 @@ bool LinkShader(
     return true;
 }
 
-static GLuint buffer;
-typedef GLfloat Position[2];
-Position *position;
-std::vector<GLint> uniLocations;
+static GLuint g_squareVBO;
+std::vector<GLint> g_uniLocations;
+float g_numSamples = 0;
+int g_maxSamples = 10;
+void CreateSquareVbo(GLuint buffer) {
+    GLfloat square[] = {-1, -1,
+                        -1, 1,
+                        1, -1,
+                        1, 1};
+    glGenBuffers(1, &buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof (GLfloat) * 8,
+                 square,
+                 GL_STATIC_DRAW);
 
-void GetUniLocations(GLint program) {
-    uniLocations = std::vector<GLint>();
-    uniLocations.push_back(glGetUniformLocation(program, "u_resolution"));
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void SetUniformValues(int width, int height) {
+void GetUniLocations(GLint program) {
+    g_uniLocations.clear();
+    g_uniLocations.push_back(glGetUniformLocation(program,
+                                                "u_accTexture"));
+    g_uniLocations.push_back(glGetUniformLocation(program,
+                                                "u_textureWeight"));
+    g_uniLocations.push_back(glGetUniformLocation(program,
+                                                "u_numSamples"));
+    g_uniLocations.push_back(glGetUniformLocation(program,
+                                                "u_resolution"));
+}
+
+void SetUniformValues(int width, int height, GLuint texture) {
+    printf("set uniform values\n");
     int index = 0;
-    glUniform2f(uniLocations[index++], float(width), float(height));
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glUniform1i(g_uniLocations[index++], 0);
+    glUniform1f(g_uniLocations[index++],
+                g_numSamples / (g_numSamples + 1));
+    glUniform1f(g_uniLocations[index++], g_numSamples);
+    glUniform2f(g_uniLocations[index++], float(width), float(height));
+    g_numSamples++;
+    printf("set uniform values Done\n");
+}
+
+GLuint g_renderProgram;
+void compileRenderProgram() {
+    GLuint vert_id = 0, frag_id = 0;
+    {
+        bool ret = LoadShader(GL_VERTEX_SHADER, vert_id,
+                              "./src/renderToTexture.vert");
+        if (!ret) {
+            fprintf(stderr, "Failed to compile vertex shader.\n");
+            exit(-1);
+        }
+    }
+
+    {
+        bool ret = LoadShader(GL_FRAGMENT_SHADER, frag_id,
+                              "./src/renderToTexture.frag");
+        if (!ret) {
+            fprintf(stderr, "Failed to compile fragment shader.\n");
+            exit(-1);
+        }
+    }
+
+    {
+        bool ret = LinkShader(g_renderProgram, vert_id, frag_id);
+        if (!ret) {
+            fprintf(stderr, "Failed to link shader.\n");
+            exit(-1);
+        }
+    }
+    glBindAttribLocation(g_renderProgram, 0, "a_vertex");
+    glBindFragDataLocation(g_renderProgram, 0, "outColor");
+
+    printf("Get uniform locations\n");
+    GetUniLocations(g_renderProgram);
+    printf("Done\n");
+}
+
+GLuint g_renderCanvasProgram = 0;
+std::vector<GLuint> g_renderingTextures;
+GLuint g_textureFrameBuffer;
+void InitRenderer(int width, int height) {
+    printf("Initialize renderer\n");
+    //CreateSquareVbo(g_squareVBO);
+
+    GLfloat square[] = {-1, -1,
+                        -1, 1,
+                        1, -1,
+                        1, 1};
+    glGenBuffers(1, &g_squareVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, g_squareVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof (GLfloat) * 8,
+                 square,
+                 GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    
+    GLuint vert_id = 0, frag_id = 0;
+    {
+        bool ret = LoadShader(GL_VERTEX_SHADER, vert_id,
+                              "./src/render.vert");
+        if (!ret) {
+            fprintf(stderr, "Failed to compile vertex shader.\n");
+            exit(-1);
+        }
+    }
+    {
+        bool ret = LoadShader(GL_FRAGMENT_SHADER, frag_id,
+                              "./src/render.frag");
+        if (!ret) {
+            fprintf(stderr, "Failed to compile fragment shader.\n");
+            exit(-1);
+        }
+    }
+    {
+        bool ret = LinkShader(g_renderCanvasProgram,
+                              vert_id,
+                              frag_id);
+        if (!ret) {
+            fprintf(stderr, "Failed to link shader.\n");
+            exit(-1);
+        }
+    }
+
+    glBindAttribLocation(g_renderCanvasProgram, 0, "a_vertex");
+    glBindFragDataLocation(g_renderCanvasProgram, 0, "outColor");
+    glCreateFramebuffers(1, &g_textureFrameBuffer);
+
+    printf("Create textures\n");
+    g_renderingTextures.clear();
+    for(int i = 0; i < 2; i++) {
+        GLuint textureHandle;
+        glGenTextures(1, &textureHandle);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureHandle);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height,
+                     0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                        GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                        GL_LINEAR);
+        glBindTexture(GL_TEXTURE_2D, 0);
+        g_renderingTextures.push_back(textureHandle);
+    }
+
+    printf("Compile Render program\n");
+    compileRenderProgram();
+    printf("Compile Render program OK\n");
+}
+
+void RenderToTexture(int width, int height){
+    printf("Render to Texture\n");
+    glUseProgram(g_renderProgram);
+    glBindFramebuffer(GL_FRAMEBUFFER, g_textureFrameBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, g_squareVBO);
+    glViewport(0, 0, width, height);
+    printf("set program\n");
+    SetUniformValues(width, height, g_renderingTextures[0]);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                           GL_TEXTURE_2D, g_renderingTextures[1], 0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT,
+                          GL_FALSE, 0, 0);
+    printf("draw arrays\n");
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    printf("flush\n");
+    glFlush();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    printf("reverse\n");
+    std::reverse(g_renderingTextures.begin(),
+                 g_renderingTextures.end());
+}
+
+void RenderToCanvas(int width, int height) {
+    printf("Render to Canvas\n");
+    glViewport(0, 0, width, height);
+    glUseProgram(g_renderCanvasProgram);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, g_renderingTextures[0]);
+    GLuint tex = glGetUniformLocation(g_renderCanvasProgram, "u_texture");
+    glUniform1i(tex, g_renderingTextures[0]);
+    glBindBuffer(GL_ARRAY_BUFFER, g_squareVBO);
+    glVertexAttribPointer(0, 2,
+                          GL_FLOAT, GL_FALSE, 0, 0);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glFlush();
+}
+
+void GLFWLoop(GLFWwindow* window, int width, int height) {
+    printf("Rendering Start");
+    while (glfwWindowShouldClose(/* GLFWwindow * window = */ window) == GL_FALSE){
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        RenderToTexture(width, height);
+        RenderToCanvas(width, height);
+
+        if(int(g_numSamples) == g_maxSamples) {
+            return;
+        }
+        glfwSwapBuffers(window);
+        glfwWaitEvents();
+    }
 }
 
 int main(int argc, char** argv) {
@@ -211,32 +358,7 @@ int main(int argc, char** argv) {
     ifs >> jsonObj;
     ifs.close();
 
-    if (glfwInit() == GL_FALSE){
-
-        std::cerr << "Can't initialize GLFW" << std::endl;
-        return 1;
-    }
-
-    atexit(glfwTerminate);
-
-
-    GLFWwindow * const window(glfwCreateWindow(/* int           width   = */ width,
-                                               /* int           height  = */ height,
-                                               /* const char  * title   = */ "Hello!",
-                                               /* GLFWmonitor * monitor = */ NULL,
-                                               /* GLFWwindow  * share   = */ NULL));
-    if (window == NULL){
-        std::cerr << "Can't create GLFW window." << std::endl;
-        return 1;
-    }
-
-    glfwMakeContextCurrent(/* GLFWwindow *  window = */ window);
-
-    glClearColor(/* GLfloat red   = */ 0.2f,
-                 /* GLfloat green = */ 0.2f,
-                 /* GLfloat blue  = */ 0.2f,
-                 /* GLfloat alpha = */ 0.0f);
-
+    GLFWwindow* window = InitGLFW(width, height);
 
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK)
@@ -245,84 +367,42 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    GLuint vert_id = 0, frag_id = 0, prog_id = 0;
-    {
-        bool ret = LoadShader(GL_VERTEX_SHADER, vert_id, "./src/render.vert");
-        if (!ret) {
-            fprintf(stderr, "Failed to compile vertex shader.\n");
-            exit(-1);
-        }
-    }
-
-    {
-        bool ret = LoadShader(GL_FRAGMENT_SHADER, frag_id, "./src/render.frag");
-        if (!ret) {
-            fprintf(stderr, "Failed to compile fragment shader.\n");
-            exit(-1);
-        }
-    }
-
-    {
-        bool ret = LinkShader(prog_id, vert_id, frag_id);
-        if (!ret) {
-            fprintf(stderr, "Failed to link shader.\n");
-            exit(-1);
-        }
-    }
-
-    glBindAttribLocation(prog_id, 0, "a_vertex");
-    glBindFragDataLocation(prog_id, 0, "outColor");
-    glUseProgram(prog_id);
-
-    glGenBuffers(1, &buffer);
-
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof (Position) * 4, NULL, GL_STATIC_DRAW);
-
-    position = (Position *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-
-    position[0][0] =  -1.0;
-    position[0][1] =  -1.0;
-    position[1][0] = -1.0;
-    position[1][1] =  1.0;
-    position[2][0] =  1.0;
-    position[2][1] = -1.0;
-    position[3][0] =  1.0;
-    position[3][1] =  1.0;
-
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    GetUniLocations(prog_id);
-
+    InitRenderer(width, height);
+    printf("Initialization Done\n");
+    //GLFWLoop(window, width, height);
+    printf("Rendering Start\n");
     while (glfwWindowShouldClose(/* GLFWwindow * window = */ window) == GL_FALSE){
-        glClear(/* GLbitfield mask = */ GL_COLOR_BUFFER_BIT);
-
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(prog_id);
+        RenderToTexture(width, height);
+        RenderToCanvas(width, height);
 
-        glEnableVertexAttribArray(0);
-
-        glBindBuffer(GL_ARRAY_BUFFER, buffer);
-
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
-
-        SetUniformValues(width, height);
-
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        glDisableVertexAttribArray(0);
-
-        glFlush();
-
-
+        if(int(g_numSamples) == g_maxSamples) {
+            break;
+        }
         glfwSwapBuffers(window);
         glfwWaitEvents();
     }
 
+    glReadBuffer( GL_BACK );
+    unsigned char *textureData = new unsigned char[width * height * 3];
+    std::fill(textureData, textureData + width * height * 3, 0);
+
+    glReadPixels(
+        0,
+        0,
+        width,
+        height,
+        GL_RGB,
+        GL_UNSIGNED_BYTE,
+        textureData
+	);
+
+    std::string filename = "limitset.png";
+    stbi_write_png(filename.c_str(), width, height,
+                   3, textureData,
+                   0);
+    delete[] textureData;
+    
     return 0;
 }

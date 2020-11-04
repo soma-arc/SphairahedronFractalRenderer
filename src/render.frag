@@ -1,12 +1,18 @@
 #version 300 es
-precision highp float;
+precision mediump float;
+
+in vec2 v_texCoord;
+uniform sampler2D u_texture;
+
+const float DISPLAY_GAMMA_COEFF = 1. / 2.2;
+vec4 gammaCorrect(vec4 rgba) {
+    return vec4((min(pow(rgba.r, DISPLAY_GAMMA_COEFF), 1.)),
+                (min(pow(rgba.g, DISPLAY_GAMMA_COEFF), 1.)),
+                (min(pow(rgba.b, DISPLAY_GAMMA_COEFF), 1.)),
+                rgba.a);
+}
 
 out vec4 outColor;
-
-uniform vec2 u_resolution;
-
 void main() {
-    outColor = vec4(gl_FragCoord.x / u_resolution.x,
-                    gl_FragCoord.y / u_resolution.y,
-                    0, 1);
+    outColor = gammaCorrect(textureLod(u_texture, v_texCoord, 0.0));
 }

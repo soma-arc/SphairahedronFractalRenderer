@@ -8,8 +8,8 @@ workspace "SphairahedronRendererWorkspace"
 
    platforms { "native", "x64", "x32" }
 
-   -- Use c++11
-   flags { cppdialect "C++11" }
+   -- Use c++14
+   flags { cppdialect "C++14" }
 
    includedirs { "./include" }
 
@@ -20,9 +20,9 @@ workspace "SphairahedronRendererWorkspace"
       kind "ConsoleApp"
       language "C++"
       files { sources }
-
+      libdirs { "/usr/local/lib/static" }
       if os.istarget("Linux") then
-         links { "GL", "GLEW", "glfw" }
+         links { "GL", "GLEW", "glfw", "pthread", "jinja2cpp" }
       end
 
       configuration "Debug"

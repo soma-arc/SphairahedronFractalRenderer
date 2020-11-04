@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <fstream>
+#include <jinja2cpp/template.h>
 #include "args.hxx"
 #include "nlohmann/json.hpp"
 
@@ -209,9 +210,6 @@ int main(int argc, char** argv) {
     }
     ifs >> jsonObj;
     ifs.close();
-
-
-
 
     if (glfwInit() == GL_FALSE){
 

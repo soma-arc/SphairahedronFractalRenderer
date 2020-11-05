@@ -241,6 +241,7 @@ void InitRenderer(int width, int height) {
     glBindAttribLocation(g_renderCanvasProgram, 0, "a_vertex");
     glBindFragDataLocation(g_renderCanvasProgram, 0, "outColor");
     glCreateFramebuffers(1, &g_textureFrameBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     printf("Create textures\n");
     g_renderingTextures.clear();
@@ -249,7 +250,7 @@ void InitRenderer(int width, int height) {
         glGenTextures(1, &textureHandle);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureHandle);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height,
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height,
                      0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
@@ -268,8 +269,13 @@ void InitRenderer(int width, int height) {
 void RenderToTexture(int width, int height){
     printf("Render to Texture\n");
     glUseProgram(g_renderProgram);
+    glActiveTexture(GL_TEXTURE0);
     glBindFramebuffer(GL_FRAMEBUFFER, g_textureFrameBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, g_squareVBO);
+    //glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+    //                     g_renderingTextures[0], 0);
+    //GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+    //glDrawBuffers(1, DrawBuffers);
     glViewport(0, 0, width, height);
     printf("set program\n");
     SetUniformValues(width, height, g_renderingTextures[0]);
@@ -280,7 +286,6 @@ void RenderToTexture(int width, int height){
                           GL_FALSE, 0, 0);
     printf("draw arrays\n");
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    printf("flush\n");
     glFlush();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     printf("reverse\n");
@@ -294,7 +299,8 @@ void RenderToCanvas(int width, int height) {
     glUseProgram(g_renderCanvasProgram);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, g_renderingTextures[0]);
-    GLuint tex = glGetUniformLocation(g_renderCanvasProgram, "u_texture");
+    GLuint tex = glGetUniformLocation(g_renderCanvasProgram,
+                                      "u_texture");
     glUniform1i(tex, g_renderingTextures[0]);
     glBindBuffer(GL_ARRAY_BUFFER, g_squareVBO);
     glVertexAttribPointer(0, 2,

@@ -1,6 +1,6 @@
 #version 300 es
 
-in vec2 a_vertex;
+layout(location = 0) in vec2 a_vertex;
 out vec2 v_texCoord;
 
 void main() {

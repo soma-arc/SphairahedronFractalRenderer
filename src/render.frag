@@ -14,5 +14,6 @@ vec4 gammaCorrect(vec4 rgba) {
 
 out vec4 outColor;
 void main() {
-    outColor = gammaCorrect(textureLod(u_texture, v_texCoord, 0.0));
+    //outColor = vec4(1, 0, 0, 1);
+    outColor = gammaCorrect(texture(u_texture, v_texCoord));
 }

@@ -1,14 +1,10 @@
-// Include standard headers
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
 #include <algorithm>
 #include <iostream>
 
-// Include GLEW
 #include <GL/glew.h>
-
-// Include GLFW
 #include <GLFW/glfw3.h>
 GLFWwindow* window;
 
@@ -57,30 +53,12 @@ int main( void )
 
 	// Ensure we can capture the escape key being pressed below
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-    // Hide the mouse and enable unlimited mouvement
-    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-    
-    // Set the mouse at the center of the screen
-    //glfwPollEvents();
-    //glfwSetCursorPos(window, 1024/2, 768/2);
-
-	// Dark blue background
-	//glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
-
-	// Enable depth test
-	//glEnable(GL_DEPTH_TEST);
-	// Accept fragment if it closer to the camera than the former one
-	//glDepthFunc(GL_LESS); 
-
-	// Cull triangles which normal is not towards the camera
-	//glEnable(GL_CULL_FACE);
 
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-	//GLuint programID = LoadShaders( "StandardShadingRTT.vertexshader", "StandardShadingRTT.fragmentshader" );
     GLuint programID = LoadShaders( "renderToTexture.vert",
                                     "renderToTexture.frag" );
 
@@ -127,11 +105,14 @@ int main( void )
         // Give an empty image to OpenGL ( the last "0" means "empty" )
         glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, windowWidth, windowHeight, 0,GL_RGB, GL_UNSIGNED_BYTE, 0);
 
-        // Poor filtering
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                        GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                        GL_NEAREST); 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                        GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
+                        GL_CLAMP_TO_EDGE);
         renderedTextures.push_back(renderedTexture);
     }
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -139,10 +120,6 @@ int main( void )
 	// Set "renderedTexture" as our colour attachement #0
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                          renderedTextures[1], 0);
-
-	//// Depth texture alternative : 
-	//glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
-
 
 	// Set the list of draw buffers.
 	GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
@@ -153,20 +130,16 @@ int main( void )
 		return false;
 
 
-	// Create and compile our GLSL program from the shaders
-	GLuint quad_programID = LoadShaders( "Passthrough.vertexshader", "WobblyTexture.fragmentshader" );
-	GLuint texID = glGetUniformLocation(quad_programID, "u_renderedTexture");
+	GLuint quad_programID = LoadShaders( "renderToScreen.vert",
+                                         "renderToScreen.frag" );
+	GLuint texID = glGetUniformLocation(quad_programID,
+                                        "u_renderedTexture");
     
 	float numSamples = 0.0f;
 	do{
-		// Render to our framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
 		glViewport(0,0,windowWidth,windowHeight); // Render on the whole framebuffer, complete from the lower left corner to the upper right
 
-		// Clear the screen
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Use our shader
 		glUseProgram(programID);        
 
 		// Bind our texture in Texture Unit 0
@@ -207,13 +180,10 @@ int main( void )
         std::reverse(renderedTextures.begin(),
                      renderedTextures.end());
                 
-		// Render to the screen
+		// --- Render to the screen ---
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
         // Render on the whole framebuffer, complete from the lower left corner to the upper right
 		glViewport(0,0,windowWidth,windowHeight);
-
-		// Clear the screen
-		//glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Use our shader
 		glUseProgram(quad_programID);
@@ -251,23 +221,17 @@ int main( void )
 		   glfwWindowShouldClose(window) == 0 );
 
 	// Cleanup VBO and shader
-	// glDeleteBuffers(1, &vertexbuffer);
-	// glDeleteBuffers(1, &uvbuffer);
-	// glDeleteBuffers(1, &normalbuffer);
-	// glDeleteBuffers(1, &elementbuffer);
+	glDeleteBuffers(1, &squarebuffer);
 	glDeleteProgram(programID);
-	//glDeleteTextures(1, &Texture);
+	glDeleteTextures(1, &renderedTextures[0]);
+    glDeleteTextures(1, &renderedTextures[1]);
 
 	glDeleteFramebuffers(1, &FramebufferName);
-	//glDeleteTextures(1, &renderedTexture);
-	//glDeleteRenderbuffers(1, &depthrenderbuffer);
-	//glDeleteBuffers(1, &quad_vertexbuffer);
 	glDeleteVertexArrays(1, &VertexArrayID);
-
+    glDeleteProgram(quad_programID);
 
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
 
 	return 0;
 }
-

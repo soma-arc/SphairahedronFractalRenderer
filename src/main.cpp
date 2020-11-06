@@ -11,6 +11,7 @@
 using namespace std;
 #include "args.hxx"
 #include "nlohmann/json.hpp"
+#include "camera.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -32,7 +33,7 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 		VertexShaderCode = sstr.str();
 		VertexShaderStream.close();
 	}else{
-		printf("Impossible to open %s. Are you in the right directory ? Don't forget to read the FAQ !\n", vertex_file_path);
+		printf("Impossible to open %s. Are you in the right directory ? \n", vertex_file_path);
 		getchar();
 		return 0;
 	}
@@ -93,7 +94,7 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 	glLinkProgram(ProgramID);
 
 	// Check the program
-	glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
+ 	glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
 	glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
 	if ( InfoLogLength > 0 ){
 		std::vector<char> ProgramErrorMessage(InfoLogLength+1);
@@ -152,7 +153,11 @@ int main(int argc, char** argv) {
     ifs.close();
 
 
-
+    int mSamples = jsonObj["maxSamples"];
+    int wWidth = jsonObj["windowWidth"];
+    int wHeight = jsonObj["windowHeight"];
+    printf("max samples %d  w x h %d x %d\n",
+           mSamples, wWidth, wHeight);
 
 // Initialise GLFW
 	if( !glfwInit() )
@@ -213,8 +218,11 @@ int main(int argc, char** argv) {
                                                "u_numSamples");
     GLuint resolutionID = glGetUniformLocation(programID,
                                                "u_resolution");
-
-
+    vector<GLuint> uniLocations;
+    Camera camera(Vec3f(0, 1, 0), Vec3f(0, 0, 0),
+                  60, Vec3f(0, 1, 1));
+    camera.getUniformLocations(programID, uniLocations);
+  
     GLfloat square[] = {-1, -1,
                         -1, 1,
                         1, -1,
@@ -297,7 +305,9 @@ int main(int argc, char** argv) {
         glUniform1f(numSamplesID, numSamples);
         glUniform2f(resolutionID, float(windowWidth),
                     float(windowHeight));
-
+        int index = 0;
+        index = camera.setUniformValues(index, uniLocations);
+        
         glBindTexture(GL_TEXTURE_2D, renderedTextures[1]);
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                              renderedTextures[1], 0);

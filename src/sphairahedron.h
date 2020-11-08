@@ -5,7 +5,7 @@
 #include "vec3.h"
 #include "plane.h"
 #include "sphere.h"
-#include <map>
+#include <jinja2cpp/template.h>
 
 using namespace std;
 
@@ -35,11 +35,12 @@ public:
                              vector<GLuint> &uniLocations);
     void setUniformValues(vector<GLuint>uniLocations, int index);
     Vec3f computeIdealVertex(Sphere a, Sphere b, Sphere c);
-    map<string, int> getShaderTemplateContext();
     void addSphereIfNotExists(vector<Sphere>& spheres, Sphere sphere);
+    jinja2::ValuesMap getShaderTemplateContext();
     
     float zb, zc;
     int numFaces, numSpheres, numPlanes, numVertexes;
+    int numExcavationSpheres = 0;
     int numDividePlanes = 1;
     vector<vector<int>> vertexIndexes;
     vector<Plane> dividePlanes;

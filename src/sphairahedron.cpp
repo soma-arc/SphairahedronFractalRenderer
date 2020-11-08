@@ -2,6 +2,7 @@
 #include "sphere.h"
 #include "plane.h"
 #include "sphairahedron.h"
+#include <jinja2cpp/template.h>
 
 const float RT_3 = sqrt(3);
 const float RT_3_INV = 1.0 / sqrt(3);
@@ -11,7 +12,7 @@ Sphairahedron::Sphairahedron(float _zb, float _zc) {
     zc = _zc;
 }
 
-Vec3f computeIdealVertex(Sphere a, Sphere b, Sphere c) {
+Vec3f Sphairahedron::computeIdealVertex(Sphere a, Sphere b, Sphere c) {
     float AB = (vlengthSq(a.center) - vlengthSq(b.center) - a.rSq + b.rSq) * 0.5 -
         vlengthSq(a.center) + vdot(a.center, b.center);
     float AC = (vlengthSq(a.center) - vlengthSq(c.center) - a.rSq + c.rSq) * 0.5 -
@@ -155,6 +156,18 @@ void Sphairahedron::computeExcavationSpheres() {
     excavationPrismSpheres.clear();
     excavationSpheres.clear();
 }
+
+jinja2::ValuesMap Sphairahedron::getShaderTemplateContext() {
+    jinja2::ValuesMap data;
+    data["numPrismSpheres"] = numSpheres;
+    data["numPrismPlanes"] = numPlanes;
+    data["numSphairahedronSpheres"] = numFaces;
+    data["numSeedSpheres"] = numVertexes;
+    data["numDividePlanes"] = numDividePlanes;
+    data["numExcavationSpheres"] = numExcavationSpheres;
+    return data;
+}
+
 
 vector<Plane> Sphairahedron::PRISM_PLANES_333 = {
     // AB - CA - BC

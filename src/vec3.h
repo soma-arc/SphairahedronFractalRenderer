@@ -72,6 +72,11 @@ inline T vlength(const Vec3<T> &vec) {
 }
 
 template <typename T>
+inline T vlengthSq(const Vec3<T> &vec) {
+    return vec.x() * vec.x() + vec.y() * vec.y() + vec.z() * vec.z();
+}
+
+template <typename T>
 inline Vec3<T> vnormalize(const Vec3<T> &vec) {
     Vec3<T> v = vec;
     T len = vlength(vec);

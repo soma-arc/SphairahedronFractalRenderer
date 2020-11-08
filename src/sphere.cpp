@@ -5,9 +5,15 @@
 
 using namespace std;
 
+Sphere::Sphere() {}
+
 Sphere::Sphere(float x, float y, float z, float _r) {
     center = Vec3f(x, y, z);
     r = _r;
+    rSq = r * r;
+}
+
+void Sphere::update() {
     rSq = r * r;
 }
 
@@ -90,11 +96,11 @@ Sphere Sphere::invertOnSphere(Sphere invertSphere) {
     Vec3f p2 = invertOnPoint(invertSphere.center +  Vec3f(-coeffR, -coeffR, -coeffR));
     Vec3f p3 = invertOnPoint(invertSphere.center +  Vec3f(coeffR, -coeffR, -coeffR));
     Vec3f p4 = invertOnPoint(invertSphere.center +  Vec3f(coeffR, coeffR, -coeffR));
-    return Sphere::fromPoints(p1, p2, p3, p4);
+    return Sphere::FromPoints(p1, p2, p3, p4);
 }
 
 Sphere Sphere::invertOnPlane(Plane plane) {
-    return Sphere::fromPoints(invertOnPoint(plane.p1),
+    return Sphere::FromPoints(invertOnPoint(plane.p1),
                               invertOnPoint(plane.p2),
                               invertOnPoint(plane.p3),
                               center);

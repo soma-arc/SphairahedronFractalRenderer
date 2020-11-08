@@ -12,8 +12,9 @@ class Plane;
 
 class Sphere {
 public:
+    Sphere();
     Sphere(float x, float y, float z, float _r);
-    
+    void update();
     int setUniformValues(int index,
                          vector<GLuint> uniLocations);
     Vec3f invertOnPoint(Vec3f p);

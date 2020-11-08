@@ -12,6 +12,7 @@ using namespace std;
 #include "args.hxx"
 #include "nlohmann/json.hpp"
 #include "camera.h"
+#include "./cube/cubeA.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -151,6 +152,10 @@ int main(int argc, char** argv) {
     }
     ifs >> jsonObj;
     ifs.close();
+
+    CubeA cubeA(0.1, 0.1);
+    printf("cubeA planes zb %f zc %f",
+           cubeA.zb, cubeA.zc);
 
 
     int mSamples = jsonObj["maxSamples"];

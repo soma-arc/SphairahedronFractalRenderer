@@ -17,6 +17,9 @@ using namespace std;
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 GLFWwindow* window;
 
 GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path){
@@ -154,7 +157,7 @@ int main(int argc, char** argv) {
     ifs.close();
 
     CubeA cubeA(0.1, 0.1);
-    printf("cubeA planes zb %f zc %f",
+    printf("cubeA planes zb %f zc %f\n",
            cubeA.zb, cubeA.zc);
 
 
@@ -212,8 +215,8 @@ int main(int argc, char** argv) {
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-    GLuint programID = LoadShaders( "./src/renderToTexture.vert",
-                                    "./src/renderToTexture.frag" );
+    GLuint programID = LoadShaders( "./src/shaders/renderToTexture.vert",
+                                    "./src/shaders/renderToTexture.frag" );
 
     GLuint accTextureID = glGetUniformLocation(programID,
                                                "u_accTexture");
@@ -287,13 +290,14 @@ int main(int argc, char** argv) {
 		return false;
 
 
-	GLuint quad_programID = LoadShaders( "./src/renderToScreen.vert",
-                                         "./src/renderToScreen.frag" );
+	GLuint quad_programID = LoadShaders( "./src/shaders/renderToScreen.vert",
+                                         "./src/shaders/renderToScreen.frag" );
 	GLuint texID = glGetUniformLocation(quad_programID,
                                         "u_renderedTexture");
     
 	float numSamples = 0.0f;
     int maxSamples = 20;
+    printf("Rendering...\n");
 	do{
 		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
 		glViewport(0,0,windowWidth,windowHeight); // Render on the whole framebuffer, complete from the lower left corner to the upper right
@@ -379,7 +383,7 @@ int main(int argc, char** argv) {
 	}
 	while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
 		   glfwWindowShouldClose(window) == 0 );
-    
+    printf("Done.\n");
 
     glReadBuffer( GL_BACK );
     unsigned char *textureData = new unsigned char[windowWidth * windowHeight * 4];
@@ -398,6 +402,7 @@ int main(int argc, char** argv) {
     std::string filename = "limitset.png";
     stbi_write_png(filename.c_str(), windowWidth, windowHeight,
                    4, textureData, 0);
+    printf("Image was written.\n");
     delete[] textureData;
 
 	// Cleanup VBO and shader

@@ -29,7 +29,8 @@ int Sphere::setUniformValues(int index,
 Vec3f Sphere::invertOnPoint(Vec3f p) {
     Vec3f d = p - center;
     float len = vlength(d);
-    return d * (rSq / (len * len)) + center;
+    Vec3f result = d * (rSq / (len * len)) + center;
+    return result;
 }
 
 void Sphere::Pivoting(vector< vector<double> > &A, int n, int k) {
@@ -48,7 +49,9 @@ void Sphere::Pivoting(vector< vector<double> > &A, int n, int k) {
 Sphere Sphere::FromPoints(Vec3f p1, Vec3f p2, Vec3f p3, Vec3f p4) {
     vector<Vec3f> p = {p1, p2, p3, p4};
     int n = 3;
-    vector<vector<double>> coefficient;
+    vector<vector<double>> coefficient= {{0, 0, 0, 0},
+                                         {0, 0, 0, 0},
+                                         {0, 0, 0, 0}};
     for (int i = 0; i < 3; i++) {
         coefficient[i][0] = 2 * (p[i + 1].x() - p[i].x());
         coefficient[i][1] = 2 * (p[i + 1].y() - p[i].y());
@@ -100,6 +103,7 @@ Sphere Sphere::invertOnSphere(Sphere invertSphere) {
 }
 
 Sphere Sphere::invertOnPlane(Plane plane) {
+    printf("invert On plane\n");
     return Sphere::FromPoints(invertOnPoint(plane.p1),
                               invertOnPoint(plane.p2),
                               invertOnPoint(plane.p3),

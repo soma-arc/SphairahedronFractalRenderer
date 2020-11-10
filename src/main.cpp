@@ -106,13 +106,102 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 		printf("%s\n", &ProgramErrorMessage[0]);
 	}
 
-	
+
 	glDetachShader(ProgramID, VertexShaderID);
 	glDetachShader(ProgramID, FragmentShaderID);
-	
+
 	glDeleteShader(VertexShaderID);
 	glDeleteShader(FragmentShaderID);
 
+	return ProgramID;
+}
+
+GLuint LoadShaders(const char * vertex_file_path,
+                   std::string fragment_string){
+
+	// Create the shaders
+	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+	GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+
+	// Read the Vertex Shader code from the file
+	std::string VertexShaderCode;
+	std::ifstream VertexShaderStream(vertex_file_path, std::ios::in);
+	if(VertexShaderStream.is_open()){
+		std::stringstream sstr;
+		sstr << VertexShaderStream.rdbuf();
+		VertexShaderCode = sstr.str();
+		VertexShaderStream.close();
+	}else{
+		printf("Impossible to open %s. Are you in the right directory ? \n", vertex_file_path);
+		getchar();
+		return 0;
+	}
+
+	// Read the Fragment Shader code from the file
+	std::string FragmentShaderCode;
+	GLint Result = GL_FALSE;
+	int InfoLogLength;
+    FragmentShaderCode = fragment_string;
+
+
+	// Compile Vertex Shader
+	printf("Compiling shader : %s\n", vertex_file_path);
+	char const * VertexSourcePointer = VertexShaderCode.c_str();
+	glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
+	glCompileShader(VertexShaderID);
+
+	// Check Vertex Shader
+	glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
+	glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+	if ( InfoLogLength > 0 ){
+		std::vector<char> VertexShaderErrorMessage(InfoLogLength+1);
+		glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
+		printf("%s\n", &VertexShaderErrorMessage[0]);
+	}
+
+
+
+	// Compile Fragment Shader
+	printf("Compiling fragment shader\n");
+	char const * FragmentSourcePointer = FragmentShaderCode.c_str();
+	glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer , NULL);
+	glCompileShader(FragmentShaderID);
+
+	// Check Fragment Shader
+	glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
+	glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+	if ( InfoLogLength > 0 ){
+		std::vector<char> FragmentShaderErrorMessage(InfoLogLength+1);
+		glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
+		printf("%s\n", &FragmentShaderErrorMessage[0]);
+	}
+
+
+
+	// Link the program
+	printf("Linking program\n");
+	GLuint ProgramID = glCreateProgram();
+	glAttachShader(ProgramID, VertexShaderID);
+	glAttachShader(ProgramID, FragmentShaderID);
+	glLinkProgram(ProgramID);
+
+	// Check the program
+ 	glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
+	glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+	if ( InfoLogLength > 0 ){
+		std::vector<char> ProgramErrorMessage(InfoLogLength+1);
+		glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
+		printf("%s\n", &ProgramErrorMessage[0]);
+	}
+
+
+	glDetachShader(ProgramID, VertexShaderID);
+	glDetachShader(ProgramID, FragmentShaderID);
+
+	glDeleteShader(VertexShaderID);
+	glDeleteShader(FragmentShaderID);
+
+    printf("LoadShaders Done\n");
 	return ProgramID;
 }
 
@@ -156,10 +245,24 @@ int main(int argc, char** argv) {
     ifs >> jsonObj;
     ifs.close();
 
-    CubeA cubeA(0.1, 0.1);
-    printf("cubeA planes zb %f zc %f\n",
-           cubeA.zb, cubeA.zc);
 
+
+
+    // CubeA cubeA(0.1, 0.1);
+    // printf("cubeA planes zb %f zc %f\n",
+    //        cubeA.zb, cubeA.zc);
+
+    // std::string source;
+	// std::ifstream FragmentShaderStream("./src/shaders/prism.jinja.frag", std::ios::in);
+	// if(FragmentShaderStream.is_open()){
+    //     printf("opened\n");
+	// 	std::stringstream sstr;
+	// 	sstr << FragmentShaderStream.rdbuf();
+	// 	source = sstr.str();
+	// 	FragmentShaderStream.close();
+	// }
+    // printf("loaded\n");
+    //printf("loaded source\n %s\n", source.c_str());
 
     int mSamples = jsonObj["maxSamples"];
     int wWidth = jsonObj["windowWidth"];
@@ -191,7 +294,7 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
-    
+
     // We would expect width and height to be 1024 and 768
     int windowWidth = 1024;
     int windowHeight = 768;
@@ -215,11 +318,33 @@ int main(int argc, char** argv) {
 	glBindVertexArray(VertexArrayID);
 
 	// Create and compile our GLSL program from the shaders
-    GLuint programID = LoadShaders( "./src/shaders/renderToTexture.vert",
-                                    "./src/shaders/renderToTexture.frag" );
+//    GLuint programID = LoadShaders( "./src/shaders/renderToTexture.vert",
+//                                    "./src/shaders/renderToTexture.frag" );
+    printf("gen cubeA\n");
+    CubeA cubeA(0.1, 0.1);
+    printf("cubeA planes zb %f zc %f\n",
+           cubeA.zb, cubeA.zc);
+
+    std::string source;
+	std::ifstream FragmentShaderStream("./src/shaders/prism.jinja.frag", std::ios::in);
+    if(FragmentShaderStream.is_open()){
+		std::stringstream sstr;
+		sstr << FragmentShaderStream.rdbuf();
+		source = sstr.str();
+		FragmentShaderStream.close();
+	}
+    jinja2::Template tpl;
+    tpl.Load(source);
+
+    std::string result = tpl.RenderAsString(cubeA.getShaderTemplateContext()).value();
+    printf("rendered result\n %s\n", result.c_str());
+    GLuint programID = LoadShaders("./src/shaders/renderToTexture.vert",
+                                   result);
 
     GLuint accTextureID = glGetUniformLocation(programID,
                                                "u_accTexture");
+    GLuint BRDFTextureID = glGetUniformLocation(programID,
+                                               "u_brdfLUT");
     GLuint textureWeightID = glGetUniformLocation(programID,
                                                   "u_textureWeight");
     GLuint numSamplesID = glGetUniformLocation(programID,
@@ -227,10 +352,13 @@ int main(int argc, char** argv) {
     GLuint resolutionID = glGetUniformLocation(programID,
                                                "u_resolution");
     vector<GLuint> uniLocations;
-    Camera camera(Vec3f(0, 1, 0), Vec3f(0, 0, 0),
+    Camera camera(Vec3f(10, 5, 10), Vec3f(0, 0, 0),
                   60, Vec3f(0, 1, 1));
+    printf("Camera uniform... \n");
     camera.getUniformLocations(programID, uniLocations);
-  
+    printf("Sphairahedron uniform... \n");
+    cubeA.getUniformLocations(programID, uniLocations);
+    printf("Getting uniform... Done\n");
     GLfloat square[] = {-1, -1,
                         -1, 1,
                         1, -1,
@@ -241,7 +369,7 @@ int main(int argc, char** argv) {
     glBufferData(GL_ARRAY_BUFFER, sizeof (GLfloat) * 8,
                  square,
                  GL_STATIC_DRAW);
-    
+
 
 	// ---------------------------------------------
 	// Render to Texture - specific code begins here
@@ -257,7 +385,7 @@ int main(int argc, char** argv) {
     for(int i = 0; i < 2; i++) {
         GLuint renderedTexture;
         glGenTextures(1, &renderedTexture);
-	
+
         // "Bind" the newly created texture : all future texture functions will modify this texture
         glBindTexture(GL_TEXTURE_2D, renderedTexture);
 
@@ -268,7 +396,7 @@ int main(int argc, char** argv) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
                         GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                        GL_NEAREST); 
+                        GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
                         GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
@@ -290,11 +418,35 @@ int main(int argc, char** argv) {
 		return false;
 
 
+    // int w,h,n;
+    // unsigned char *BRDFData = stbi_load("./src/img/brdfLUT.png",
+    //                                     &w, &h, &n, 0);
+    // printf("%d x %d  %d\n", w, h, n);
+    // if(BRDFData == nullptr)
+    //     throw(std::string("Failed to load texture"));
+    // unsigned int BRDFTexture;
+    // glGenTextures(1, &BRDFTexture);
+    // glBindTexture(GL_TEXTURE_2D, BRDFTexture);
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB,
+    //              GL_UNSIGNED_BYTE, BRDFData);
+    
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+    //                 GL_CLAMP_TO_EDGE);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
+    //                 GL_CLAMP_TO_EDGE);
+
+    // glBindTexture(GL_TEXTURE_2D, 0);
+    
+    // stbi_image_free(BRDFData);
+
+    
 	GLuint quad_programID = LoadShaders( "./src/shaders/renderToScreen.vert",
                                          "./src/shaders/renderToScreen.frag" );
 	GLuint texID = glGetUniformLocation(quad_programID,
                                         "u_renderedTexture");
-    
+
 	float numSamples = 0.0f;
     int maxSamples = 20;
     printf("Rendering...\n");
@@ -302,21 +454,28 @@ int main(int argc, char** argv) {
 		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
 		glViewport(0,0,windowWidth,windowHeight); // Render on the whole framebuffer, complete from the lower left corner to the upper right
 
-		glUseProgram(programID);        
+		glUseProgram(programID);
 
 		// Bind our texture in Texture Unit 0
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, renderedTextures[0]);
 		glUniform1i(accTextureID, 0);
 
+        // glActiveTexture(GL_TEXTURE1);
+        // glBindTexture(GL_TEXTURE_2D, BRDFTexture);
+		// glUniform1i(BRDFTextureID, 1);
+        
         glUniform1f(textureWeightID,
                     numSamples / (numSamples + 1.0f));
         glUniform1f(numSamplesID, numSamples);
         glUniform2f(resolutionID, float(windowWidth),
                     float(windowHeight));
         int index = 0;
+        printf("camera uniform values\n");
         index = camera.setUniformValues(index, uniLocations);
-        
+        printf("cubeA uniform values\n");
+        index = cubeA.setUniformValues(index, uniLocations);
+        printf("Done\n");
         glBindTexture(GL_TEXTURE_2D, renderedTextures[1]);
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                              renderedTextures[1], 0);
@@ -340,7 +499,7 @@ int main(int argc, char** argv) {
 
 		glDisableVertexAttribArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
-        
+
         std::reverse(renderedTextures.begin(),
                      renderedTextures.end());
 
@@ -354,7 +513,6 @@ int main(int argc, char** argv) {
 		glUseProgram(quad_programID);
 		// Bind our texture in Texture Unit 0
         glBindTexture(GL_TEXTURE_2D, renderedTextures[0]);
-		glActiveTexture(GL_TEXTURE0);
 		glUniform1i(texID, 0);
 
 		// 1rst attribute buffer : vertices
@@ -418,6 +576,6 @@ int main(int argc, char** argv) {
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
 
-    
+
     return 0;
 }

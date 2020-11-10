@@ -8,8 +8,10 @@ const float RT_3 = sqrt(3);
 const float RT_3_INV = 1.0 / sqrt(3);
 
 Sphairahedron::Sphairahedron(float _zb, float _zc) {
+    printf("update\n");
     zb = _zb;
     zc = _zc;
+    //update();
 }
 
 Vec3f Sphairahedron::computeIdealVertex(Sphere a, Sphere b, Sphere c) {
@@ -26,29 +28,35 @@ Vec3f Sphairahedron::computeIdealVertex(Sphere a, Sphere b, Sphere c) {
     return a.center + ((b.center - a.center) * s) + ((c.center - a.center) * t);
 }
 
-void Sphairahedron::update() {
-    computeSpheres();
-    computeGenSpheres();
-    computeVertexes();
-    computeDividePlanes();
-    computeExcavationSpheres();
-    computeSeedSpheres();
-    computeConvexSphere();
-    computeBoundingVolume();
-}
+// void Sphairahedron::update() {
+//     printf("compute sphere");
+//     computeSpheres();
+//     printf("compute genSphere");
+//     computeGenSpheres();
+//     printf("compute vertex");    
+//     computeVertexes();
+//     printf("compute DividePlanes");
+//     computeDividePlanes();
+//     // computeExcavationSpheres();
+//     // computeSeedSpheres();
+//     // computeConvexSphere();
+//     // computeBoundingVolume();
+// }
 
 void Sphairahedron::computeSpheres() {} // computed by cube.cpp
 
 void Sphairahedron::computeGenSpheres() {} // computed by cube.cpp
 
-void Sphairahedron::computeVertexes() {
-    vertexes.clear();
-    for(const auto &vert : vertexIndexes) {
-        vertexes.push_back(computeIdealVertex(gSpheres[vert[0]],
-                                              gSpheres[vert[1]],
-                                              gSpheres[vert[2]]));
-    }
-}
+// void Sphairahedron::computeVertexes() {
+//     printf("vertexes compute %d\n", vertexIndexes.size());
+//     vertexes.clear();
+//     for(const auto &vert : vertexIndexes) {
+//         vertexes.push_back(computeIdealVertex(gSpheres[vert[0]],
+//                                               gSpheres[vert[1]],
+//                                               gSpheres[vert[2]]));
+//     }
+//     printf("Done %d\n", vertexes.size());
+// }
 
 void Sphairahedron::addSphereIfNotExists(vector<Sphere>& spheres, Sphere sphere) {
     for (Sphere s : spheres) {
@@ -88,16 +96,18 @@ Sphere Sphairahedron::computeMinSeedSphere(Vec3f x, vector<Vec3f> vertexes,
     
 }
 
-void Sphairahedron::computeSeedSpheres() {
-    seedSpheres.clear();
-    for(int i = 0; i < numVertexes; i++) {
-        addSphereIfNotExists(seedSpheres,
-                             computeMinSeedSphere(vertexes[i], vertexes,
-                                                  gSpheres[vertexIndexes[i][0]],
-                                                  gSpheres[vertexIndexes[i][1]],
-                                                  gSpheres[vertexIndexes[i][2]]));
-    }
-}
+// void Sphairahedron::computeSeedSpheres() {
+//     seedSpheres.clear();
+//     printf("num seed sphere %d", numVertexes);
+//     for(int i = 0; i < numVertexes; i++) {
+//         printf("seed sphere %d", i);
+//         addSphereIfNotExists(seedSpheres,
+//                              computeMinSeedSphere(vertexes[i], vertexes,
+//                                                   gSpheres[vertexIndexes[i][0]],
+//                                                   gSpheres[vertexIndexes[i][1]],
+//                                                   gSpheres[vertexIndexes[i][2]]));
+//     }
+// }
 
 void Sphairahedron::computeConvexSphere() {
     convexSpheres.clear();
@@ -134,10 +144,18 @@ void Sphairahedron::computeBoundingVolume() {
 void Sphairahedron::computeInversionSphere() {} // computed by cube.cpp
 
 Plane Sphairahedron::computePlane(int vertexIdx1, int vertexIdx2, int vertexIdx3) {
+    printf("in computePlane\n");
+    printf("vert\n");
+    printf("%f, %f, %f\n",
+           vertexes[vertexIdx1].x(),
+           vertexes[vertexIdx1].y(),
+           vertexes[vertexIdx1].z());
     Vec3f p1 = inversionSphere.invertOnPoint(vertexes[vertexIdx1]);
+    printf("computePlane2\n");
     Vec3f p2 = inversionSphere.invertOnPoint(vertexes[vertexIdx2]);
+    printf("computePlane3\n");
     Vec3f p3 = inversionSphere.invertOnPoint(vertexes[vertexIdx3]);
-
+    printf("Done inversions\n");
     Vec3f v1 = p2 - p1;
     Vec3f v2 = p3 - p1;
     Vec3f normal = vnormalize(vcross(v1, v2));
@@ -148,8 +166,13 @@ Plane Sphairahedron::computePlane(int vertexIdx1, int vertexIdx2, int vertexIdx3
 }
 
 void Sphairahedron::computeDividePlanes() {
+    printf("clear\n");
     dividePlanes.clear();
-    dividePlanes.push_back(computePlane(0, 3, 5));
+    printf("compute\n");
+    Plane p = computePlane(0, 3, 5);
+    printf("push_back\n");
+    dividePlanes.push_back(p);
+    printf("Done\n");
 }
 
 void Sphairahedron::computeExcavationSpheres() {
@@ -167,7 +190,6 @@ jinja2::ValuesMap Sphairahedron::getShaderTemplateContext() {
     data["numExcavationSpheres"] = numExcavationSpheres;
     return data;
 }
-
 
 vector<Plane> Sphairahedron::PRISM_PLANES_333 = {
     // AB - CA - BC

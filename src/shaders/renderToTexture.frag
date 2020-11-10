@@ -2,6 +2,8 @@
 precision highp float;
 
 uniform sampler2D u_accTexture;
+uniform sampler2D u_brdfLUT;
+
 uniform float u_textureWeight;
 uniform float u_numSamples;
 uniform vec2 u_resolution;
@@ -116,8 +118,10 @@ void main() {
     //position *= 13.5;
 
     //outColor = computeColor(position);
+    // outColor = texture(u_brdfLUT,
+    //                    gl_FragCoord.xy / u_resolution);
     vec4 texCol = texture(u_accTexture,
                           gl_FragCoord.xy / u_resolution);
-	outColor = vec4(mix(computeColor(position),
+    outColor = vec4(mix(computeColor(position),
                         texCol, u_textureWeight));
 }

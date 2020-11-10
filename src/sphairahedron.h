@@ -33,7 +33,7 @@ public:
     
     void getUniformLocations(GLuint programID,
                              vector<GLuint> &uniLocations);
-    void setUniformValues(vector<GLuint>uniLocations, int index);
+    int setUniformValues(int uniI, vector<GLuint>uniLocations);
     Vec3f computeIdealVertex(Sphere a, Sphere b, Sphere c);
     void addSphereIfNotExists(vector<Sphere>& spheres, Sphere sphere);
     jinja2::ValuesMap getShaderTemplateContext();

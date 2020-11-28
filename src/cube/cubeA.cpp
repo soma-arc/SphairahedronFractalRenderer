@@ -76,10 +76,9 @@ jinja2::ValuesMap CubeA::getShaderTemplateContext() {
 }
 
 void CubeA::getUniformLocations(GLuint programID,
-                                        vector<GLuint> &uniLocations) {
+                                vector<GLuint> &uniLocations) {
     printf("getUniformLocations\n");
     uniLocations.push_back(glGetUniformLocation(programID, "u_zbzc"));
-    uniLocations.push_back(glGetUniformLocation(programID, "u_ui"));
 
     uniLocations.push_back(glGetUniformLocation(programID, "u_inversionSphere.center"));
     uniLocations.push_back(glGetUniformLocation(programID, "u_inversionSphere.r"));
@@ -175,6 +174,7 @@ int CubeA::setUniformValues(int uniI, vector<GLuint>uniLocations) {
     
     glUniform2f(uniLocations[uniI++],
                 zb, zc);
+
     glUniform3f(uniLocations[uniI++],
                 inversionSphere.center.x(),
                 inversionSphere.center.y(),
@@ -226,7 +226,7 @@ int CubeA::setUniformValues(int uniI, vector<GLuint>uniLocations) {
     glUniform1f(uniLocations[uniI++], boundingPlaneY);
     glUniform3f(uniLocations[uniI++],
                 boundingSphere.center.x(),
-                boundingSphere.center.y(),
+                boundingSphere.center.y(), 
                 boundingSphere.center.z());
     glUniform2f(uniLocations[uniI++],
                  boundingSphere.r, boundingSphere.rSq);
@@ -249,6 +249,13 @@ int CubeA::setUniformValues(int uniI, vector<GLuint>uniLocations) {
                     planes[i].normal.x(),
                     planes[i].normal.y(),
                     planes[i].normal.z());
+        printf("prism planes %d (%f, %f, %f) normal(%f, %f, %f)\n",i,
+               planes[i].p1.x(),
+               planes[i].p1.y(),
+               planes[i].p1.z(),
+               planes[i].normal.x(),
+               planes[i].normal.y(),
+               planes[i].normal.z());
     }
     printf("faces\n");
     for (int i = 0; i < numFaces; i++) {

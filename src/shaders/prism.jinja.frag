@@ -352,22 +352,27 @@ vec3 BRDF(vec3 baseColor, float metallic, float roughness, vec3 dielectricSpecul
 }
 
 float DistSphere(vec3 pos) {
-    return distance(pos, vec3(0, 0, 0)) - 1.0;
+    return distance(pos, vec3(0, 0, 0)) - 3.0;
 }
 
 const int ID_PRISM = 0;
 const int ID_INI_SPHERES = 1;
-bool u_displayRawSphairahedronPrism = true;
+bool u_displayRawSphairahedronPrism = false;
 vec4 distFunc(const vec3 pos) {
     vec4 hit = vec4(MAX_FLOAT, -1, -1, -1);
+
     // hit = DistUnion(hit,
     //                 u_displayRawSphairahedronPrism ?
     //                 vec4(DistInfSphairahedronAll(pos), ID_PRISM, -1, -1) :
     //                 vec4(DistInfSphairahedron(pos), ID_PRISM, -1, -1));
     // hit = DistUnion(hit,
     //                 vec4(DistInfSphairahedron(pos), ID_PRISM, -1, -1));
+    // hit = DistUnion(hit,
+    //                 vec4(DistSphere(pos), ID_PRISM, -1, -1));
+    //hit = DistUnion(hit,
+    //vec4(DistPrism(pos), ID_PRISM, -1, -1));
     hit = DistUnion(hit,
-                    vec4(DistSphere(pos), ID_PRISM, -1, -1));
+                    vec4(DistInfSphairahedronAll(pos), ID_PRISM, -1, -1));
     return hit;
 }
 

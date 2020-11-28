@@ -352,8 +352,32 @@ int main(int argc, char** argv) {
     GLuint resolutionID = glGetUniformLocation(programID,
                                                "u_resolution");
     vector<GLuint> uniLocations;
-    Camera camera(Vec3f(10, 5, 10), Vec3f(0, 0, 0),
-                  60, Vec3f(0, 1, 1));
+    Camera camera(Vec3f(0,0,5), Vec3f(0, 0, 0),
+                  60, Vec3f(0, 1, 0));
+    GLuint prismPlanes1Origin = glGetUniformLocation(programID,
+                                               "u_prismPlanes[0].origin");
+    GLuint prismPlanes1Normal = glGetUniformLocation(programID,
+                                               "u_prismPlanes[0].normal");
+    GLuint prismPlanes2Origin = glGetUniformLocation(programID,
+                                               "u_prismPlanes[1].origin");
+    GLuint prismPlanes2Normal = glGetUniformLocation(programID,
+                                               "u_prismPlanes[1].normal");
+    GLuint prismPlanes3Origin = glGetUniformLocation(programID,
+                                               "u_prismPlanes[2].origin");
+    GLuint prismPlanes3Normal = glGetUniformLocation(programID,
+                                               "u_prismPlanes[2].normal");
+    
+    GLuint prismSpheres1Center = glGetUniformLocation(programID,
+                                                      "u_prismSpheres[0].center");
+    GLuint prismSpheres1R = glGetUniformLocation(programID,
+                                                 "u_prismSpheres[0].r");
+    GLuint prismSpheres2Center = glGetUniformLocation(programID,
+                                                      "u_prismSpheres[1].center");
+    GLuint prismSpheres2R = glGetUniformLocation(programID,
+                                                 "u_prismSpheres[1].r");    GLuint prismSpheres3Center = glGetUniformLocation(programID,
+                                                      "u_prismSpheres[2].center");
+    GLuint prismSpheres3R = glGetUniformLocation(programID,
+                                                 "u_prismSpheres[2].r");
     printf("Camera uniform... \n");
     camera.getUniformLocations(programID, uniLocations);
     printf("Sphairahedron uniform... \n");
@@ -475,6 +499,58 @@ int main(int argc, char** argv) {
         index = camera.setUniformValues(index, uniLocations);
         printf("cubeA uniform values\n");
         index = cubeA.setUniformValues(index, uniLocations);
+        glUniform3f(prismPlanes1Origin,
+                    cubeA.planes[0].p1.x(),
+                    cubeA.planes[0].p1.y(),
+                    cubeA.planes[0].p1.z());
+        glUniform3f(prismPlanes1Normal,
+                    cubeA.planes[0].normal.x(),
+                    cubeA.planes[0].normal.y(),
+                    cubeA.planes[0].normal.z());
+        glUniform3f(prismPlanes2Origin,
+                    cubeA.planes[1].p1.x(),
+                    cubeA.planes[1].p1.y(),
+                    cubeA.planes[1].p1.z());
+        glUniform3f(prismPlanes2Normal,
+                    cubeA.planes[1].normal.x(),
+                    cubeA.planes[1].normal.y(),
+                    cubeA.planes[1].normal.z());
+        glUniform3f(prismPlanes3Origin,
+                    cubeA.planes[2].p1.x(),
+                    cubeA.planes[2].p1.y(),
+                    cubeA.planes[2].p1.z());
+        glUniform3f(prismPlanes3Normal,
+                    cubeA.planes[2].normal.x(),
+                    cubeA.planes[2].normal.y(),
+                    cubeA.planes[2].normal.z());
+        glUniform3f(prismSpheres1Center,
+                    cubeA.prismSpheres[0].center.x(),
+                    cubeA.prismSpheres[0].center.y(),
+                    cubeA.prismSpheres[0].center.z());
+        glUniform2f(prismSpheres1R,
+                    cubeA.prismSpheres[0].r,
+                    cubeA.prismSpheres[0].rSq);
+        glUniform3f(prismSpheres2Center,
+                    cubeA.prismSpheres[1].center.x(),
+                    cubeA.prismSpheres[1].center.y(),
+                    cubeA.prismSpheres[1].center.z());
+        glUniform2f(prismSpheres2R,
+                    cubeA.prismSpheres[1].r,
+                    cubeA.prismSpheres[1].rSq);
+        glUniform3f(prismSpheres3Center,
+                    cubeA.prismSpheres[2].center.x(),
+                    cubeA.prismSpheres[2].center.y(),
+                    cubeA.prismSpheres[2].center.z());
+        glUniform2f(prismSpheres3R,
+                    cubeA.prismSpheres[2].r,
+                    cubeA.prismSpheres[2].rSq);
+        // GLuint prismSpheres1Center;
+        // GLuint prismSpheres1R ;
+        // GLuint prismSpheres2Center;
+        // GLuint prismSpheres2R;
+        // GLuint prismSpheres3Center;
+        // GLuint prismSpheres3R;
+        
         printf("Done\n");
         glBindTexture(GL_TEXTURE_2D, renderedTextures[1]);
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,

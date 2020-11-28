@@ -352,16 +352,16 @@ vec3 BRDF(vec3 baseColor, float metallic, float roughness, vec3 dielectricSpecul
 }
 
 float DistSphere(vec3 pos) {
-    return distance(pos, vec3(0, 0, 0)) - 0.00001;
+    return distance(pos, vec3(0, 0, 0)) - 1.0;
 }
 
 const int ID_PRISM = 0;
 const int ID_INI_SPHERES = 1;
-
+bool u_displayRawSphairahedronPrism = true;
 vec4 distFunc(const vec3 pos) {
     vec4 hit = vec4(MAX_FLOAT, -1, -1, -1);
     // hit = DistUnion(hit,
-    //                 u_displeyRawSphairahedonPrism ?
+    //                 u_displayRawSphairahedronPrism ?
     //                 vec4(DistInfSphairahedronAll(pos), ID_PRISM, -1, -1) :
     //                 vec4(DistInfSphairahedron(pos), ID_PRISM, -1, -1));
     // hit = DistUnion(hit,
@@ -517,47 +517,16 @@ vec3 getNormal(const vec3 p) {
                           distanceFunc(p + NORMAL_COEFF.yyx) - distanceFunc(p - NORMAL_COEFF.yyx)));
 }
 const vec3 lightDir = vec3(-0.577, 0.577, 0.577);
-const float angle = 60.0;
-const float fov = angle * 0.5 * PI / 180.0;
-vec3  cPos = vec3(0.0, 0.0, 2.0);
 out vec4 outColor;
 void main() {
     vec3 sum = vec3(0);
     vec2 coordOffset = Rand2n(gl_FragCoord.xy, u_numSamples);
-    //vec3 ray = CalcRay(u_camera.pos, u_camera.target, u_camera.up, u_camera.fov,
-     //                   u_resolution, gl_FragCoord.xy + coordOffset);
+    vec3 ray = CalcRay(u_camera.pos, u_camera.target, u_camera.up, u_camera.fov,
+                       u_resolution, gl_FragCoord.xy + coordOffset);
     // vec3 org = u_camera.pos;
     // vec3 rayOrtho = CalcRayOrtho(u_camera.pos, u_camera.target, u_camera.up, 1.0,
     //                              u_resolution, gl_FragCoord.xy + coordOffset, org);
-     // marching loop
-
-    vec2 p = (gl_FragCoord.xy * 2.0 - u_resolution) / min(u_resolution.x, u_resolution.y);
-    vec3 cDir = vec3(0.0,  0.0, -1.0);
-    vec3 cUp  = vec3(0.0,  -1.0,  0.0);
-    vec3 cSide = cross(cDir, cUp);
-    float targetDepth = 1.0;
-    
-    // ray
-    vec3 ray = normalize(vec3(sin(fov) * p.x, sin(fov) * p.y, -cos(fov)));	
-    float d = 0.0; // レイとオブジェクト間の最短距離
-    float rLen = 0.0;     // レイに継ぎ足す長さ
-    vec3  rPos = cPos;    // レイの先端位置
-
-    for(int i = 0; i < 16; i++){
-        d = distanceFunc(rPos);
-        rLen += d;
-        rPos = cPos + ray * rLen;
-    }
-    vec4 col;
-    // hit check
-    // hit check
-    if(abs(d) < 0.001){
-        vec3 normal = getNormal(rPos);
-        float diff = clamp(dot(lightDir, normal), 0.1, 1.0);
-        col = vec4(vec3(diff), 1.0);
-    }else{
-        col = vec4(vec3(0.0), 1.0);
-    }
     vec4 texCol = textureLod(u_accTexture, gl_FragCoord.xy / u_resolution, 0.0);
-	outColor = vec4(mix(col, texCol, u_textureWeight));
+	outColor = vec4(mix(clamp(computeColor(u_camera.pos, ray), 0.0, 1.0),
+                        texCol, u_textureWeight));
 }

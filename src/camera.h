@@ -2,13 +2,14 @@
 #include "vec3.h"
 #include <vector>
 #include <GL/glew.h>
+#include <math.h>
 
 class Camera {
 public:
     Camera(Vec3f _pos, Vec3f _target, float _fov, Vec3f _up){
         pos = _pos;
         target = _target;
-        fov = _fov;
+        fov = _fov * M_PI / 180.;
         up = _up;
     }
 

@@ -326,7 +326,8 @@ int main(int argc, char** argv) {
            cubeA.zb, cubeA.zc);
 
     std::string source;
-	std::ifstream FragmentShaderStream("./src/shaders/prism.jinja.frag", std::ios::in);
+	//std::ifstream FragmentShaderStream("./src/shaders/prism.jinja.frag", std::ios::in);
+    std::ifstream FragmentShaderStream("./src/shaders/limitset.jinja.frag", std::ios::in);
     if(FragmentShaderStream.is_open()){
 		std::stringstream sstr;
 		sstr << FragmentShaderStream.rdbuf();
@@ -390,6 +391,12 @@ int main(int argc, char** argv) {
                                                  "u_lightDirection");
     GLuint aoID = glGetUniformLocation(programID,
                                        "u_ao");
+    GLuint marchingThresholdID = glGetUniformLocation(programID,
+                                                      "u_marchingThreshold");
+    GLuint fudgeFactorID = glGetUniformLocation(programID,
+                                                "u_fudgeFactor");
+    GLuint maxIterationsID = glGetUniformLocation(programID,
+                                                  "u_maxIterations");
 
     printf("Camera uniform... \n");
     camera.getUniformLocations(programID, uniLocations);
@@ -486,7 +493,7 @@ int main(int argc, char** argv) {
                                         "u_renderedTexture");
 
 	float numSamples = 0.0f;
-    int maxSamples = 20;
+    int maxSamples = 5;
     printf("Rendering...\n");
 	do{
 		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
@@ -571,6 +578,9 @@ int main(int argc, char** argv) {
                     -0.7071067811865475,
                     0);
         glUniform2f(aoID, 0.0968, 2.0);
+        glUniform1f(marchingThresholdID, 0.0001);
+        glUniform1f(fudgeFactorID, 0.2);
+        glUniform1i(maxIterationsID, 50);
         
         printf("Done\n");
         glBindTexture(GL_TEXTURE_2D, renderedTextures[1]);

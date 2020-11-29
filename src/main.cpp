@@ -321,7 +321,7 @@ int main(int argc, char** argv) {
 //    GLuint programID = LoadShaders( "./src/shaders/renderToTexture.vert",
 //                                    "./src/shaders/renderToTexture.frag" );
     printf("gen cubeA\n");
-    CubeA cubeA(0.1, 0.1);
+    CubeA cubeA(0.1, 0.6);
     printf("cubeA planes zb %f zc %f\n",
            cubeA.zb, cubeA.zc);
 
@@ -352,8 +352,9 @@ int main(int argc, char** argv) {
     GLuint resolutionID = glGetUniformLocation(programID,
                                                "u_resolution");
     vector<GLuint> uniLocations;
-    Camera camera(Vec3f(0,0,5), Vec3f(0, 0, 0),
-                  60, Vec3f(0, 1, 0));
+    Camera camera(Vec3f(0,3,3), Vec3f(0, 0, 0),
+                  60, Vec3f(0, -1, 0));
+    vector<GLuint> prismPlanesIDs;
     GLuint prismPlanes1Origin = glGetUniformLocation(programID,
                                                "u_prismPlanes[0].origin");
     GLuint prismPlanes1Normal = glGetUniformLocation(programID,
@@ -374,10 +375,22 @@ int main(int argc, char** argv) {
     GLuint prismSpheres2Center = glGetUniformLocation(programID,
                                                       "u_prismSpheres[1].center");
     GLuint prismSpheres2R = glGetUniformLocation(programID,
-                                                 "u_prismSpheres[1].r");    GLuint prismSpheres3Center = glGetUniformLocation(programID,
+                                                 "u_prismSpheres[1].r");
+    GLuint prismSpheres3Center = glGetUniformLocation(programID,
                                                       "u_prismSpheres[2].center");
     GLuint prismSpheres3R = glGetUniformLocation(programID,
                                                  "u_prismSpheres[2].r");
+    GLuint prismDividePlane1Origin = glGetUniformLocation(programID,
+                                                          "u_dividePlanes[0].origin");
+    GLuint prismDividePlane1Normal = glGetUniformLocation(programID,
+                                                          "u_dividePlanes[0].normal");
+    GLuint castShadow = glGetUniformLocation(programID,
+                                             "u_castShadow");
+    GLuint lightDirection = glGetUniformLocation(programID,
+                                                 "u_lightDirection");
+    GLuint aoID = glGetUniformLocation(programID,
+                                       "u_ao");
+
     printf("Camera uniform... \n");
     camera.getUniformLocations(programID, uniLocations);
     printf("Sphairahedron uniform... \n");
@@ -442,28 +455,29 @@ int main(int argc, char** argv) {
 		return false;
 
 
-    // int w,h,n;
-    // unsigned char *BRDFData = stbi_load("./src/img/brdfLUT.png",
-    //                                     &w, &h, &n, 0);
-    // printf("%d x %d  %d\n", w, h, n);
-    // if(BRDFData == nullptr)
-    //     throw(std::string("Failed to load texture"));
-    // unsigned int BRDFTexture;
-    // glGenTextures(1, &BRDFTexture);
-    // glBindTexture(GL_TEXTURE_2D, BRDFTexture);
-    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB,
-    //              GL_UNSIGNED_BYTE, BRDFData);
+    int w,h,n;
+    unsigned char *BRDFData = stbi_load("./src/img/brdfLUT.png",
+                                        &w, &h, &n, STBI_rgb);
+    printf("Texture %d x %d  %d\n", w, h, n);
+    if(BRDFData == nullptr){
+        throw(std::string("Failed to load texture"));
+    }
+    GLuint BRDFTexture;
+    glGenTextures(1, &BRDFTexture);
+    glBindTexture(GL_TEXTURE_2D, BRDFTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB,
+                 GL_UNSIGNED_BYTE, BRDFData);
     
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-    //                 GL_CLAMP_TO_EDGE);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
-    //                 GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                    GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
+                    GL_CLAMP_TO_EDGE);
 
-    // glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
     
-    // stbi_image_free(BRDFData);
+    stbi_image_free(BRDFData);
 
     
 	GLuint quad_programID = LoadShaders( "./src/shaders/renderToScreen.vert",
@@ -485,9 +499,9 @@ int main(int argc, char** argv) {
         glBindTexture(GL_TEXTURE_2D, renderedTextures[0]);
 		glUniform1i(accTextureID, 0);
 
-        // glActiveTexture(GL_TEXTURE1);
-        // glBindTexture(GL_TEXTURE_2D, BRDFTexture);
-		// glUniform1i(BRDFTextureID, 1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, BRDFTexture);
+		glUniform1i(BRDFTextureID, 1);
         
         glUniform1f(textureWeightID,
                     numSamples / (numSamples + 1.0f));
@@ -544,12 +558,19 @@ int main(int argc, char** argv) {
         glUniform2f(prismSpheres3R,
                     cubeA.prismSpheres[2].r,
                     cubeA.prismSpheres[2].rSq);
-        // GLuint prismSpheres1Center;
-        // GLuint prismSpheres1R ;
-        // GLuint prismSpheres2Center;
-        // GLuint prismSpheres2R;
-        // GLuint prismSpheres3Center;
-        // GLuint prismSpheres3R;
+        glUniform3f(prismDividePlane1Origin,
+                    cubeA.dividePlanes[0].p1.x(),
+                    cubeA.dividePlanes[0].p1.y(),
+                    cubeA.dividePlanes[0].p1.z());
+        glUniform3f(prismDividePlane1Normal,
+                    cubeA.dividePlanes[0].normal.x(),
+                    cubeA.dividePlanes[0].normal.y(),
+                    cubeA.dividePlanes[0].normal.z());
+        glUniform1i(castShadow, true);
+        glUniform3f(lightDirection, -0.7071067811865475,
+                    -0.7071067811865475,
+                    0);
+        glUniform2f(aoID, 0.0968, 2.0);
         
         printf("Done\n");
         glBindTexture(GL_TEXTURE_2D, renderedTextures[1]);

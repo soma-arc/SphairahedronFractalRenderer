@@ -90,7 +90,7 @@ void CubeA::getUniformLocations(GLuint programID,
         std::string s2 = s + "].normal";
         uniLocations.push_back(glGetUniformLocation(programID, s1.c_str()));
         uniLocations.push_back(glGetUniformLocation(programID, s2.c_str()));
-        s = "u_convexSpheres[";
+        s = "u_convexSphebres[";
         s += i;
         s1 = s + "].center";
         s2 = s + "].r";
@@ -249,13 +249,6 @@ int CubeA::setUniformValues(int uniI, vector<GLuint>uniLocations) {
                     planes[i].normal.x(),
                     planes[i].normal.y(),
                     planes[i].normal.z());
-        printf("prism planes %d (%f, %f, %f) normal(%f, %f, %f)\n",i,
-               planes[i].p1.x(),
-               planes[i].p1.y(),
-               planes[i].p1.z(),
-               planes[i].normal.x(),
-               planes[i].normal.y(),
-               planes[i].normal.z());
     }
     printf("faces\n");
     for (int i = 0; i < numFaces; i++) {

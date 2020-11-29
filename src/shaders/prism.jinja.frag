@@ -308,9 +308,10 @@ vec3 computeIBL(vec3 diffuseColor, vec3 specularColor,
     float mixFact = (exp(1. * NoL) - 1.) / (exp(1.) - 1.);
     vec3 diffuse = diffuseColor * mix(vec3(0.2), vec3(1), mixFact);
 
-    vec2 brdf = textureLod(u_brdfLUT,
-                           vec2(NoV,
-                                u_metallicRoughness.y), 0.0).rg;
+    // vec2 brdf = textureLod(u_brdfLUT,
+    //                        vec2(NoV,
+    //                             u_metallicRoughness.y), 0.0).rg;
+    vec2 brdf = vec2(0);
     float LoReflect = clamp(dot(L, reflection), 0.0, 1.0);
     mixFact = (exp(2. * LoReflect) - 1.)/(exp(2.) - 1.);
     vec3 specularLight = mix(vec3(0.1, 0.1, 0.3), vec3(1, 1, 1), mixFact);
@@ -372,7 +373,7 @@ vec4 distFunc(const vec3 pos) {
     //hit = DistUnion(hit,
     //vec4(DistPrism(pos), ID_PRISM, -1, -1));
     hit = DistUnion(hit,
-                    vec4(DistInfSphairahedronAll(pos), ID_PRISM, -1, -1));
+                    vec4(DistInfSphairahedron(pos), ID_PRISM, -1, -1));
     return hit;
 }
 
@@ -534,4 +535,6 @@ void main() {
     vec4 texCol = textureLod(u_accTexture, gl_FragCoord.xy / u_resolution, 0.0);
 	outColor = vec4(mix(clamp(computeColor(u_camera.pos, ray), 0.0, 1.0),
                         texCol, u_textureWeight));
+    // outColor = vec4(mix(textureLod(u_brdfLUT, gl_FragCoord.xy / u_resolution, 0.0),
+    //                     texCol, u_textureWeight));
 }

@@ -397,6 +397,8 @@ int main(int argc, char** argv) {
                                                 "u_fudgeFactor");
     GLuint maxIterationsID = glGetUniformLocation(programID,
                                                   "u_maxIterations");
+    GLuint boundingPlaneYID = glGetUniformLocation(programID,
+                                                   "u_boundingPlaneY");
 
     printf("Camera uniform... \n");
     camera.getUniformLocations(programID, uniLocations);
@@ -581,6 +583,8 @@ int main(int argc, char** argv) {
         glUniform1f(marchingThresholdID, 0.0001);
         glUniform1f(fudgeFactorID, 0.2);
         glUniform1i(maxIterationsID, 50);
+        glUniform1f(boundingPlaneYID, cubeA.boundingPlaneY);
+        //printf("bounding plane %f\n", cubeA.boundingPlaneY);
         
         printf("Done\n");
         glBindTexture(GL_TEXTURE_2D, renderedTextures[1]);

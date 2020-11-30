@@ -117,8 +117,9 @@ void Sphairahedron::computeConvexSphere() {
 }
 
 void Sphairahedron::computeBoundingVolume() {
-    float boundingPlaneY = -99999999999;
-    float boundingPlaneMinY = 99999999999;
+    printf("in compute bounding volume\n");
+    boundingPlaneY = -99999999999;
+    boundingPlaneMinY = 99999999999;
     for (Sphere s : prismSpheres) {
         boundingPlaneY = max(boundingPlaneY, s.center.y());
         boundingPlaneMinY = min(boundingPlaneMinY, s.center.y());

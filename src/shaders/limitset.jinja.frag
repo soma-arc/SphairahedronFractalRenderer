@@ -492,9 +492,9 @@ vec4 computeColor(const vec3 rayOrg, const vec3 rayDir) {
 		bool hit = true;
 
 		// {% if renderMode == 0 %}
-        // hit = IntersectBoundingPlane(vec3(0, 1, 0), vec3(0, u_boundingPlaneY, 0),
-		//   							 rayPos, rayDir,
-        //                              tmin, tmax);
+        hit = IntersectBoundingPlane(vec3(0, 1, 0), vec3(0, u_boundingPlaneY, 0),
+		  							 rayPos, rayDir,
+                                     tmin, tmax);
 		// {% else %}
 		// hit = IntersectBoundingSphere(u_boundingSphere.center - u_boundingSphere.center,
         //                               u_boundingSphere.r.x,

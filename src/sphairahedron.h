@@ -51,6 +51,7 @@ public:
     Sphere inversionSphere;
     Sphere boundingSphere;
     float boundingPlaneY;
+    float boundingPlaneMinY;
     vector<Sphere>prismSpheres;
     vector<Plane> planes;
     vector<Sphere> excavationPrismSpheres;

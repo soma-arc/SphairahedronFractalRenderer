@@ -14,7 +14,7 @@ Cube::Cube(float _zb, float _zc) : Sphairahedron(_zb, _zc) {
 }
 
 void Cube::computeGenSpheres() {
-    printf("plane size %d\n", planes.size());
+    printf("plane size %zu\n", planes.size());
     gSpheres.clear();
     printf("plane%d\n", 0);
     gSpheres.push_back(inversionSphere.invertOnPlane(planes[0])); // O1

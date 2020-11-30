@@ -44,14 +44,14 @@ void CubeA::computeSeedSpheres() {
 }
 
 void CubeA::computeVertexes() {
-    printf("vertexes compute %d\n", vertexIndexes.size());
+    printf("vertexes compute %zu\n", vertexIndexes.size());
     vertexes.clear();
     for(const auto &vert : vertexIndexes) {
         vertexes.push_back(computeIdealVertex(gSpheres[vert[0]],
                                               gSpheres[vert[1]],
                                               gSpheres[vert[2]]));
     }
-    printf("Done %d\n", vertexes.size());
+    printf("Done %zu\n", vertexes.size());
 }
 
 void CubeA::computeSpheres() {
@@ -90,7 +90,7 @@ void CubeA::getUniformLocations(GLuint programID,
         std::string s2 = s + "].normal";
         uniLocations.push_back(glGetUniformLocation(programID, s1.c_str()));
         uniLocations.push_back(glGetUniformLocation(programID, s2.c_str()));
-        s = "u_convexSphebres[";
+        s = "u_convexSpheres[";
         s += i;
         s1 = s + "].center";
         s2 = s + "].r";
@@ -257,7 +257,7 @@ int CubeA::setUniformValues(int uniI, vector<GLuint>uniLocations) {
                     gSpheres[i].center.y(),
                     gSpheres[i].center.z());
         glUniform2f(uniLocations[uniI++],
-                     gSpheres[i].r, gSpheres[i].rSq);
+                    gSpheres[i].r, gSpheres[i].rSq);
     }
     printf("vertexes\n");
     for (int i = 0; i < numVertexes; i++) {

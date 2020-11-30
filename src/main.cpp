@@ -327,7 +327,8 @@ int main(int argc, char** argv) {
 
     std::string source;
 	//std::ifstream FragmentShaderStream("./src/shaders/prism.jinja.frag", std::ios::in);
-    std::ifstream FragmentShaderStream("./src/shaders/limitset.jinja.frag", std::ios::in);
+    //std::ifstream FragmentShaderStream("./src/shaders/limitset.jinja.frag", std::ios::in);
+    std::ifstream FragmentShaderStream("./src/shaders/finiteSphairahedron.jinja.frag", std::ios::in);
     if(FragmentShaderStream.is_open()){
 		std::stringstream sstr;
 		sstr << FragmentShaderStream.rdbuf();
@@ -353,11 +354,13 @@ int main(int argc, char** argv) {
     GLuint resolutionID = glGetUniformLocation(programID,
                                                "u_resolution");
     vector<GLuint> uniLocations;
-    Camera camera(Vec3f(0,3,3), Vec3f(0, 0, 0),
+    Camera camera(Vec3f(0,3,1), Vec3f(0, 0, 0),
                   60, Vec3f(0, -1, 0));
     vector<GLuint> prismPlanesIDs;
     GLuint prismPlanes1Origin = glGetUniformLocation(programID,
                                                "u_prismPlanes[0].origin");
+    GLuint colorWeightID = glGetUniformLocation(programID,
+                                              "u_colorWeight");
     GLuint prismPlanes1Normal = glGetUniformLocation(programID,
                                                "u_prismPlanes[0].normal");
     GLuint prismPlanes2Origin = glGetUniformLocation(programID,
@@ -385,6 +388,27 @@ int main(int argc, char** argv) {
                                                           "u_dividePlanes[0].origin");
     GLuint prismDividePlane1Normal = glGetUniformLocation(programID,
                                                           "u_dividePlanes[0].normal");
+    GLuint convexSphere1Center = glGetUniformLocation(programID,
+                                                      "u_convexSpheres[0].center");
+    GLuint convexSphere1R = glGetUniformLocation(programID,
+                                                 "u_convexSpheres[0].r");
+    vector<GLuint> sphairahedronSpheres;
+    for(int i = 0; i < cubeA.numFaces; i++) { 
+        std::string s1 = "u_sphairahedronSpheres["+ std::to_string(i) +"].center";
+        std::string s2 = "u_sphairahedronSpheres["+ std::to_string(i) +"].r";
+        // printf("%s\n", s1.c_str());
+        // printf("%s\n", s2.c_str());
+        sphairahedronSpheres.push_back(
+            glGetUniformLocation(programID, s1.c_str()));
+        sphairahedronSpheres.push_back(
+            glGetUniformLocation(programID, s2.c_str()));
+    }
+    GLuint inversionSphereCenter = glGetUniformLocation(programID, "u_inversionSphere.center");
+    GLuint inversionSphereR = glGetUniformLocation(programID,
+                                                   "u_inversionSphere.r");
+                                                  
+                                                  
+
     GLuint castShadow = glGetUniformLocation(programID,
                                              "u_castShadow");
     GLuint lightDirection = glGetUniformLocation(programID,
@@ -496,6 +520,7 @@ int main(int argc, char** argv) {
 
 	float numSamples = 0.0f;
     int maxSamples = 5;
+    float colorWeight = 0.0;
     printf("Rendering...\n");
 	do{
 		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
@@ -515,13 +540,14 @@ int main(int argc, char** argv) {
         glUniform1f(textureWeightID,
                     numSamples / (numSamples + 1.0f));
         glUniform1f(numSamplesID, numSamples);
+        glUniform1f(colorWeightID, colorWeight);
         glUniform2f(resolutionID, float(windowWidth),
                     float(windowHeight));
         int index = 0;
         printf("camera uniform values\n");
         index = camera.setUniformValues(index, uniLocations);
         printf("cubeA uniform values\n");
-        index = cubeA.setUniformValues(index, uniLocations);
+        //index = cubeA.setUniformValues(index, uniLocations);
         glUniform3f(prismPlanes1Origin,
                     cubeA.planes[0].p1.x(),
                     cubeA.planes[0].p1.y(),
@@ -575,6 +601,29 @@ int main(int argc, char** argv) {
                     cubeA.dividePlanes[0].normal.x(),
                     cubeA.dividePlanes[0].normal.y(),
                     cubeA.dividePlanes[0].normal.z());
+        glUniform3f(convexSphere1Center,
+                    cubeA.convexSpheres[0].center.x(),
+                    cubeA.convexSpheres[0].center.y(),
+                    cubeA.convexSpheres[0].center.z());
+        glUniform2f(convexSphere1R,
+                    cubeA.convexSpheres[0].r,
+                    cubeA.convexSpheres[0].rSq);
+        for(unsigned int i = 0; i < cubeA.gSpheres.size(); i++) {
+            glUniform3f(sphairahedronSpheres[i * 2],
+                        cubeA.gSpheres[i].center.x(),
+                        cubeA.gSpheres[i].center.y(),
+                        cubeA.gSpheres[i].center.z());
+            glUniform2f(sphairahedronSpheres[i * 2 + 1],
+                        cubeA.gSpheres[i].r,
+                        cubeA.gSpheres[i].rSq);
+        }
+        glUniform3f(inversionSphereCenter,
+                    cubeA.inversionSphere.center.x(),
+                    cubeA.inversionSphere.center.y(),
+                    cubeA.inversionSphere.center.z());
+        glUniform2f(inversionSphereR,
+                    cubeA.inversionSphere.r,
+                    cubeA.inversionSphere.rSq);
         glUniform1i(castShadow, true);
         glUniform3f(lightDirection, -0.7071067811865475,
                     -0.7071067811865475,

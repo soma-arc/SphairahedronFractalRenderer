@@ -245,25 +245,6 @@ int main(int argc, char** argv) {
     ifs >> jsonObj;
     ifs.close();
 
-
-
-
-    // CubeA cubeA(0.1, 0.1);
-    // printf("cubeA planes zb %f zc %f\n",
-    //        cubeA.zb, cubeA.zc);
-
-    // std::string source;
-	// std::ifstream FragmentShaderStream("./src/shaders/prism.jinja.frag", std::ios::in);
-	// if(FragmentShaderStream.is_open()){
-    //     printf("opened\n");
-	// 	std::stringstream sstr;
-	// 	sstr << FragmentShaderStream.rdbuf();
-	// 	source = sstr.str();
-	// 	FragmentShaderStream.close();
-	// }
-    // printf("loaded\n");
-    //printf("loaded source\n %s\n", source.c_str());
-
     int mSamples = jsonObj["maxSamples"];
     int wWidth = jsonObj["windowWidth"];
     int wHeight = jsonObj["windowHeight"];

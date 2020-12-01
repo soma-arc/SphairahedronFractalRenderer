@@ -41,3 +41,26 @@ jinja2::ValuesMap Cube::getShaderTemplateContext() {
     data["numExcavationSpheres"] = numExcavationSpheres;
     return data;
 }
+
+void Cube::computeVertexes() {
+    printf("vertexes compute %zu\n", vertexIndexes.size());
+    vertexes.clear();
+    for(const auto &vert : vertexIndexes) {
+        vertexes.push_back(computeIdealVertex(gSpheres[vert[0]],
+                                              gSpheres[vert[1]],
+                                              gSpheres[vert[2]]));
+    }
+    printf("Done %zu\n", vertexes.size());
+}
+
+void Cube::computeSeedSpheres() {
+    seedSpheres.clear();
+    printf("num seed sphere %d\n", numVertexes);
+    for(int i = 0; i < numVertexes; i++) {
+        addSphereIfNotExists(seedSpheres,
+                             computeMinSeedSphere(vertexes[i], vertexes,
+                                                  gSpheres[vertexIndexes[i][0]],
+                                                  gSpheres[vertexIndexes[i][1]],
+                                                  gSpheres[vertexIndexes[i][2]]));
+    }
+}

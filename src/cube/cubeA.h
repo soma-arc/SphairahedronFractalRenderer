@@ -7,6 +7,4 @@ public:
     CubeA(float _zb, float _zc);
     void computeSpheres();
     void update();
-    void computeVertexes();
-    void computeSeedSpheres();
 };

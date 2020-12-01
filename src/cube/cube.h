@@ -15,4 +15,6 @@ public:
                                         {3, 4, 5}, {1, 2, 5}, {1, 3, 5}, {0, 2, 4}};
     int numVertexes = vertexIndexes.size();
     virtual jinja2::ValuesMap getShaderTemplateContext();
+    virtual void computeVertexes();
+    virtual void computeSeedSpheres();
 };

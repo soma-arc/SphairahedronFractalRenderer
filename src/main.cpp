@@ -426,9 +426,7 @@ int main(int argc, char** argv) {
 
     printf("Camera uniform... \n");
     camera.getUniformLocations(programID, uniLocations);
-    printf("Sphairahedron uniform... \n");
-    cubeA.getUniformLocations(programID, uniLocations);
-    printf("Getting uniform... Done\n");
+    printf("Done\n");
     GLfloat square[] = {-1, -1,
                         -1, 1,
                         1, -1,
@@ -546,8 +544,7 @@ int main(int argc, char** argv) {
         int index = 0;
         printf("camera uniform values\n");
         index = camera.setUniformValues(index, uniLocations);
-        printf("cubeA uniform values\n");
-        //index = cubeA.setUniformValues(index, uniLocations);
+
         for(int i = 0; i < cubeA.numPlanes; i++) {
             glUniform3f(prismPlanes[i * 2],
                         cubeA.planes[i].p1.x(),

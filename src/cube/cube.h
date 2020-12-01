@@ -1,5 +1,6 @@
 #pragma once
 #include "../sphairahedron.h"
+#include <jinja2cpp/template.h>
 
 class Cube : public Sphairahedron {
 public:
@@ -13,4 +14,5 @@ public:
     vector<vector<int>>vertexIndexes = {{0, 1, 2}, {0, 3, 4}, {2, 4, 5}, {0, 1, 3},
                                         {3, 4, 5}, {1, 2, 5}, {1, 3, 5}, {0, 2, 4}};
     int numVertexes = vertexIndexes.size();
+    virtual jinja2::ValuesMap getShaderTemplateContext();
 };

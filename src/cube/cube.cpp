@@ -2,15 +2,7 @@
 #include "../sphairahedron.h"
 #include "../sphere.h"
 
-Cube::Cube(float _zb, float _zc) : Sphairahedron(_zb, _zc) {
-    printf("cube cpp\n");
-    numFaces = 6;
-    numSpheres = 3;
-    numPlanes = 3;
-    vertexIndexes = {{0, 1, 2}, {0, 3, 4}, {2, 4, 5}, {0, 1, 3},
-                     {3, 4, 5}, {1, 2, 5}, {1, 3, 5}, {0, 2, 4}};
-    numVertexes = vertexIndexes.size();
-    
+Cube::Cube(float _zb, float _zc) : Sphairahedron(_zb, _zc) { 
 }
 
 void Cube::computeGenSpheres() {
@@ -37,4 +29,15 @@ void Cube::computeInversionSphere() {
         -prismSpheres[2].center.y(),
          prismSpheres[2].center.z(),
          prismSpheres[2].r);
+}
+
+jinja2::ValuesMap Cube::getShaderTemplateContext() {
+    jinja2::ValuesMap data;
+    data["numPrismSpheres"] = numSpheres;
+    data["numPrismPlanes"] = numPlanes;
+    data["numSphairahedronSpheres"] = numFaces;
+    data["numSeedSpheres"] = numVertexes;
+    data["numDividePlanes"] = numDividePlanes;
+    data["numExcavationSpheres"] = numExcavationSpheres;
+    return data;
 }

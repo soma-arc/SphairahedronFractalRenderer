@@ -326,7 +326,8 @@ int main(int argc, char** argv) {
            cubeA.zb, cubeA.zc);
 
     std::string source;
-	std::ifstream FragmentShaderStream("./src/shaders/prism.jinja.frag", std::ios::in);
+    std::ifstream FragmentShaderStream("./src/shaders/finiteLimitset.jinja.frag", std::ios::in);
+	//std::ifstream FragmentShaderStream("./src/shaders/prism.jinja.frag", std::ios::in);
     //std::ifstream FragmentShaderStream("./src/shaders/limitset.jinja.frag", std::ios::in);
     //std::ifstream FragmentShaderStream("./src/shaders/finiteSphairahedron.jinja.frag", std::ios::in);
     if(FragmentShaderStream.is_open()){
@@ -405,6 +406,8 @@ int main(int argc, char** argv) {
     GLuint inversionSphereCenter = glGetUniformLocation(programID, "u_inversionSphere.center");
     GLuint inversionSphereR = glGetUniformLocation(programID,
                                                    "u_inversionSphere.r");
+    GLuint boundingSphereCenter = glGetUniformLocation(programID, "u_boundingSphere.center");
+    GLuint boundingSphereR = glGetUniformLocation(programID, "u_boundingSphere.r");
 
     GLuint castShadow = glGetUniformLocation(programID,
                                              "u_castShadow");
@@ -604,6 +607,14 @@ int main(int argc, char** argv) {
         glUniform2f(inversionSphereR,
                     cubeA.inversionSphere.r,
                     cubeA.inversionSphere.rSq);
+        glUniform3f(boundingSphereCenter,
+                    cubeA.boundingSphere.center.x(),
+                    cubeA.boundingSphere.center.y(),
+                    cubeA.boundingSphere.center.z());
+        glUniform2f(boundingSphereR,
+                    cubeA.boundingSphere.r,
+                    cubeA.boundingSphere.rSq);
+
         glUniform1i(castShadow, true);
         glUniform3f(lightDirection, -0.7071067811865475,
                     -0.7071067811865475,

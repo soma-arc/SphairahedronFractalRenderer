@@ -13,30 +13,28 @@ public:
         up = _up;
     }
 
-    void getUniformLocations(GLuint programID,
-                             std::vector<GLuint>& uniLocations) {
-        uniLocations.push_back(glGetUniformLocation(programID,
-                                                    "u_camera.pos"));
-        uniLocations.push_back(glGetUniformLocation(programID,
-                                                    "u_camera.target"));
-        uniLocations.push_back(glGetUniformLocation(programID,
-                                                    "u_camera.fov"));
-        uniLocations.push_back(glGetUniformLocation(programID,
-                                                    "u_camera.up"));
+    void getUniformLocations(GLuint programID) {
+        posID = glGetUniformLocation(programID,
+                                     "u_camera.pos");
+        targetID = glGetUniformLocation(programID,
+                                        "u_camera.target");
+        fovID = glGetUniformLocation(programID,
+                                     "u_camera.fov");
+        upID = glGetUniformLocation(programID,
+                                    "u_camera.up");
     }
 
-    int setUniformValues(int index,
-                         std::vector<GLuint> uniLocations) {
-        glUniform3f(uniLocations[index++],
+    void setUniformValues() {
+        glUniform3f(posID,
                     pos.x(), pos.y(), pos.z());
-        glUniform3f(uniLocations[index++],
+        glUniform3f(targetID,
                     target.x(), target.y(), target.z());
-        glUniform1f(uniLocations[index++], fov);
-        glUniform3f(uniLocations[index++],
+        glUniform1f(fovID, fov);
+        glUniform3f(upID,
                     up.x(), up.y(), up.z());
-        return index;
     }
 
+    GLuint posID, targetID, fovID, upID;
     Vec3f pos, target, up;
     float fov;
 };

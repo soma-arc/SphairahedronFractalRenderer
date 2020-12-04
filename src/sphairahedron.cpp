@@ -183,12 +183,6 @@ void Sphairahedron::computeExcavationSpheres() {
 
 jinja2::ValuesMap Sphairahedron::getShaderTemplateContext() {
     jinja2::ValuesMap data;
-    data["numPrismSpheres"] = numSpheres;
-    data["numPrismPlanes"] = numPlanes;
-    data["numSphairahedronSpheres"] = numFaces;
-    data["numSeedSpheres"] = numVertexes;
-    data["numDividePlanes"] = numDividePlanes;
-    data["numExcavationSpheres"] = numExcavationSpheres;
     return data;
 }
 

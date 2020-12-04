@@ -36,10 +36,13 @@ public:
     int setUniformValues(int uniI, vector<GLuint>uniLocations);
     Vec3f computeIdealVertex(Sphere a, Sphere b, Sphere c);
     void addSphereIfNotExists(vector<Sphere>& spheres, Sphere sphere);
-    jinja2::ValuesMap getShaderTemplateContext();
+    virtual jinja2::ValuesMap getShaderTemplateContext();
     
     float zb, zc;
-    int numFaces, numSpheres, numPlanes, numVertexes;
+    int numFaces = 0;
+    int numSpheres = 0;
+    int numPlanes = 0;
+    int numVertexes = 0;
     int numExcavationSpheres = 0;
     int numDividePlanes = 1;
     vector<vector<int>> vertexIndexes;

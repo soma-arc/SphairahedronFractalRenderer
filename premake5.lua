@@ -2,7 +2,6 @@ sources = {
    "src/main.cpp",
    "src/sphairahedron.cpp",
    "src/cube/cube.cpp",
-   "src/cube/cubeA.cpp",
    "src/sphere.cpp",
    "src/plane.cpp"
 }

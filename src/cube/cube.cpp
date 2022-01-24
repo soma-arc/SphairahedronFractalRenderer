@@ -13,21 +13,13 @@ Cube::Cube(float _zb, float _zc) : Sphairahedron(_zb, _zc) {
 }
 
 void Cube::computeGenSpheres() {
-    printf("plane size %zu\n", planes.size());
     gSpheres.clear();
-    printf("plane%d\n", 0);
     gSpheres.push_back(inversionSphere.invertOnPlane(planes[0])); // O1
-    printf("plane%d\n", 1);
     gSpheres.push_back(inversionSphere.invertOnSphere(prismSpheres[0])); // O2
-    printf("plane%d\n", 2);
     gSpheres.push_back(inversionSphere.invertOnPlane(planes[1])); // O3
-    printf("plane%d\n", 3);
     gSpheres.push_back(inversionSphere.invertOnSphere(prismSpheres[1])); // O4
-    printf("plane%d\n", 4);
     gSpheres.push_back(inversionSphere.invertOnPlane(planes[2])); // O5
-    printf("plane%d\n", 5);
     gSpheres.push_back(inversionSphere.invertOnSphere(prismSpheres[2])); // O6
-    printf("plane Done\n");
 }
 
 void Cube::computeInversionSphere() {
@@ -80,22 +72,14 @@ CubeA::CubeA(float _zb, float _zc) : Cube(_zb, _zc) {
 }
 
 void CubeA::update() {
-    printf("compute sphere\n");
     computeSpheres();
     computeInversionSphere();
-    printf("compute genSpheres\n");
     computeGenSpheres();
-    printf("compute vertex\n");    
     computeVertexes();
-    printf("compute DividePlanes\n");
     computeDividePlanes();
-    printf("compute ExcavationSpheres\n");
     computeExcavationSpheres();
-    printf("compute Seed Spheres\n");
     computeSeedSpheres();
-    printf("compute convex spheres\n");
     computeConvexSphere();
-    printf("compute bounding volume\n");
     computeBoundingVolume();
 }
 
@@ -116,22 +100,14 @@ CubeB::CubeB(float _zb, float _zc) : Cube(_zb, _zc) {
 }
 
 void CubeB::update() {
-    printf("compute sphere\n");
     computeSpheres();
     computeInversionSphere();
-    printf("compute genSpheres\n");
     computeGenSpheres();
-    printf("compute vertex\n");    
     computeVertexes();
-    printf("compute DividePlanes\n");
     computeDividePlanes();
-    printf("compute ExcavationSpheres\n");
     computeExcavationSpheres();
-    printf("compute Seed Spheres\n");
     computeSeedSpheres();
-    printf("compute convex spheres\n");
     computeConvexSphere();
-    printf("compute bounding volume\n");
     computeBoundingVolume();
 }
 
@@ -151,22 +127,14 @@ CubeC::CubeC(float _zb, float _zc) : Cube(_zb, _zc) {
 }
 
 void CubeC::update() {
-    printf("compute sphere\n");
     computeSpheres();
     computeInversionSphere();
-    printf("compute genSpheres\n");
     computeGenSpheres();
-    printf("compute vertex\n");    
     computeVertexes();
-    printf("compute DividePlanes\n");
     computeDividePlanes();
-    printf("compute ExcavationSpheres\n");
     computeExcavationSpheres();
-    printf("compute Seed Spheres\n");
     computeSeedSpheres();
-    printf("compute convex spheres\n");
     computeConvexSphere();
-    printf("compute bounding volume\n");
     computeBoundingVolume();
 }
 
@@ -177,6 +145,117 @@ void CubeC::computeSpheres() {
     Sphere s2((2 - SQRT_3 * r2) * 0.5, 0, r2 * 0.5, r2);
     Sphere s4(-0.5, zb, SQRT_3 / 2 - r4, r4);
     Sphere s6(-(1 - r6) * 0.5, zc, -SQRT_3 * (1 - r6) * 0.5, r6);
+
+    prismSpheres = {s2, s4, s6};
+}
+
+CubeD::CubeD(float _zb, float _zc) : Cube(_zb, _zc) {
+    planes = Sphairahedron::PRISM_PLANES_236;
+    update();
+}
+
+void CubeD::update() {
+    computeSpheres();
+    computeInversionSphere();
+    computeGenSpheres();
+    computeVertexes();
+    computeDividePlanes();
+    computeExcavationSpheres();
+    computeSeedSpheres();
+    computeConvexSphere();
+    computeBoundingVolume();
+}
+
+void CubeD::computeSpheres() {
+    float r2 = (3 * zb * zb + zc * zc + 6 * zb * zc + 6) / 18;
+    float r4 = (15 * zb * zb - zc * zc - 6 * zb * zc + 12) / (18 * SQRT_3);
+    float r6 = (-3 * zb * zb + 5 * zc * zc - 6 * zb * zc + 12) / 18.0;
+    Sphere s2(1 - r2, 0, 0, r2);
+    Sphere s4(0.5, zb, SQRT_3 / 2 - r4, r4);
+    Sphere s6(-(1 - r6) * 0.5, zc, -SQRT_3 * (1 - r6) * 0.5, r6);
+
+    prismSpheres = {s2, s4, s6};
+}
+
+CubeE::CubeE(float _zb, float _zc) : Cube(_zb, _zc) {
+    planes = Sphairahedron::PRISM_PLANES_236;
+    update();
+}
+
+void CubeE::update() {
+    computeSpheres();
+    computeInversionSphere();
+    computeGenSpheres();
+    computeVertexes();
+    computeDividePlanes();
+    computeExcavationSpheres();
+    computeSeedSpheres();
+    computeConvexSphere();
+    computeBoundingVolume();
+}
+
+void CubeE::computeSpheres() {
+    float r2 = (zc * zc + 6 * zb * zc + 3) / (7 * SQRT_3);
+    float r4 = (7 * zb * zb - zc * zc - 6 * zb * zc + 4) / (14);
+    float r6 = (2 * zc * zc - 2 * zb * zc + 6) / 7.0;
+    Sphere s2(1 - SQRT_3 * 0.5 * r2, 0, r2 * 0.5, r2);
+    Sphere s4((1 + r4) * 0.5, zb, (1 - r4) * SQRT_3 * 0.5, r4);
+    Sphere s6(-(1 - r6) * 0.5, zc, -(1 - r6) * SQRT_3 * 0.5, r6);
+    prismSpheres = {s2, s4, s6};
+}
+
+CubeH::CubeH(float _zb, float _zc) : Cube(_zb, _zc) {
+    planes = Sphairahedron::PRISM_PLANES_236;
+    update();
+}
+
+void CubeH::update() {
+    computeSpheres();
+    computeInversionSphere();
+    computeGenSpheres();
+    computeVertexes();
+    computeDividePlanes();
+    computeExcavationSpheres();
+    computeSeedSpheres();
+    computeConvexSphere();
+    computeBoundingVolume();
+}
+
+void CubeH::computeSpheres() {
+    float r2 = (3 * zb * zb + 2 * zb * zc + 3) / (5 * SQRT_3);
+    float r4 = 2 * (zb * zb - zb * zc + 1) / (5);
+    float r6 = (-3 * zb * zb - 2 * zb * zc + 5 * zc * zc + 12) / (10 * SQRT_3);
+    Sphere s2(1 - SQRT_3 / 2 * r2, 0, r2 / 2, r2);
+    Sphere s4((1 - r4) / 2, zb, (1 - r4) * SQRT_3 / 2, r4);
+    Sphere s6(SQRT_3 / 2 * r6 - 0.5, zc, (-SQRT_3 + r6) / 2, r6);
+
+    prismSpheres = {s2, s4, s6};
+}
+
+CubeI::CubeI(float _zb, float _zc) : Cube(_zb, _zc) {
+    planes = Sphairahedron::PRISM_PLANES_244;
+    update();
+}
+
+void CubeI::update() {
+    computeSpheres();
+    computeInversionSphere();
+    computeGenSpheres();
+    computeVertexes();
+    computeDividePlanes();
+    computeExcavationSpheres();
+    computeSeedSpheres();
+    computeConvexSphere();
+    computeBoundingVolume();
+}
+
+void CubeI::computeSpheres() {
+    float r2 = (zc * zc + 2 * zb * zc + 2) / 6;
+    float r4 = SQRT_2 * (-zc * zc - 2 * zb * zc + 3 * zb * zb + 4) / 12;
+    float r6 = (zc * zc - zb * zc + 2) / (3);
+    Sphere s2(1 - r2, 0, 0, r2);
+    Sphere s4(r4 / SQRT_2, zb, 1 - r4 / SQRT_2, r4);
+    Sphere s6(0, zc, -1 + r6, r6);
 
     prismSpheres = {s2, s4, s6};
 }

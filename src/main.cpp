@@ -243,6 +243,10 @@ int main(int argc, char** argv) {
     std::string imageType = jsonObj["imageType"];
     std::string basePolyhedron = jsonObj["basePolyhedron"];
     int angleType = jsonObj["angleType"];
+    float param1 = jsonObj["param1"];
+    float param2 = jsonObj["param2"];
+    nlohmann::json cameraJson = jsonObj["camera"];
+
     printf("max samples %d  w x h %d x %d\n",
            maxSamples, windowWidth, windowHeight);
 
@@ -291,14 +295,35 @@ int main(int argc, char** argv) {
     Sphairahedron *sphairahedron;
     
     if(basePolyhedron == "cube") {
-        // if(angleType == 0) {
-        //     sphairahedron = new CubeA(0.1, 0.6);
-        // } else if (angleType == 1) {
-        //     sphairahedron = new CubeB(0.1, 0.6);
-        // }
-        sphairahedron = new CubeC(0.1, 0.6);
+        switch (angleType) {
+        case 0:
+            sphairahedron = new CubeA(param1, param2);
+            break;
+        case 1:
+            sphairahedron = new CubeB(param1, param2);
+            break;
+        case 2:
+            sphairahedron = new CubeC(param1, param2);
+            break;
+        case 3:
+            sphairahedron = new CubeD(param1, param2);
+            break;
+        case 4:
+            sphairahedron = new CubeE(param1, param2);
+            break;
+        case 5:
+            sphairahedron = new CubeH(param1, param2);
+            break;
+        case 6:
+            sphairahedron = new CubeI(param1, param2);
+            break;
+        default:
+            printf("This angle type is not defined");
+            sphairahedron = new CubeA(param1, param2);
+            break;
+        }
     }
-    std::cout << "cubeC " << sphairahedron->numFaces << std::endl;
+
     std::string source;
     std::ifstream FragmentShaderStream;
     if(imageType == "infiniteSphairahedron") {
@@ -336,8 +361,16 @@ int main(int argc, char** argv) {
     GLuint resolutionID = glGetUniformLocation(programID,
                                                "u_resolution");
     vector<GLuint> uniLocations;
-    Camera camera(Vec3f(0,1,3), Vec3f(0, 0, 0),
-                  60, Vec3f(0, -1, 0));
+    Camera camera(Vec3f(cameraJson["position"][0],
+                        cameraJson["position"][1],
+                        cameraJson["position"][2]),
+                  Vec3f(cameraJson["target"][0],
+                        cameraJson["target"][1],
+                        cameraJson["target"][2]),
+                  cameraJson["fovDegree"],
+                  Vec3f(cameraJson["up"][0],
+                        cameraJson["up"][1],
+                        cameraJson["up"][2]));
 
     GLuint colorWeightID = glGetUniformLocation(programID,
                                               "u_colorWeight");

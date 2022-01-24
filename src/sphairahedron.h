@@ -58,7 +58,9 @@ public:
     vector<Plane> planes;
     vector<Sphere> excavationPrismSpheres;
     vector<Sphere> excavationSpheres;
-    
+    float SQRT_3 = sqrt(3);
+    float SQRT_2 = sqrt(2);
+
     static vector<Plane> PRISM_PLANES_333;
     static vector<Plane> PRISM_PLANES_236;
     static vector<Plane> PRISM_PLANES_244;

@@ -8,7 +8,6 @@ public:
     void computeGenSpheres();
     void computeInversionSphere();
     
-    float SQRT_3 = sqrt(3);
     virtual jinja2::ValuesMap getShaderTemplateContext();
     virtual void computeVertexes();
     virtual void computeSeedSpheres();
@@ -31,6 +30,34 @@ public:
 class CubeC : public Cube {
 public:
     CubeC(float _zb, float _zc);
+    void computeSpheres();
+    void update();
+};
+
+class CubeD : public Cube {
+public:
+    CubeD(float _zb, float _zc);
+    void computeSpheres();
+    void update();
+};
+
+class CubeE : public Cube {
+public:
+    CubeE(float _zb, float _zc);
+    void computeSpheres();
+    void update();
+};
+
+class CubeH : public Cube {
+public:
+    CubeH(float _zb, float _zc);
+    void computeSpheres();
+    void update();
+};
+
+class CubeI : public Cube {
+public:
+    CubeI(float _zb, float _zc);
     void computeSpheres();
     void update();
 };

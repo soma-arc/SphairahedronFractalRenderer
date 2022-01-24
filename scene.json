@@ -3,5 +3,18 @@
   "windowHeight": 768,
   "imageType": "infiniteSphairahedron",
   "basePolyhedron": "cube",
-  "angleType": 0
+  "angleType": 0,
+  "param1": 0.1,
+  "param2": 0.1,
+  "camera": {
+      "position": [0, 2, 3],
+      "target": [0, 0, 0],
+      "fovDegree": 60,
+      "up": [0, -1, 0]
+  }
+  "inversionSphere": {
+      "type": "default",
+      "center": [0, 0, 0],
+      "radius": 1
+  }
 }

@@ -210,12 +210,6 @@ int main(int argc, char** argv) {
     args::ArgumentParser parser("Render sphairahedron-based fractals.");
     args::ValueFlag<std::string> inputJson(parser, "json", "Input json file",
                                            {'j', "json"}, "scene.json");
-    args::ValueFlag<int> widthArg(parser, "width",
-                                 "width (1024)",
-                                 {'w', "width"}, 1024);
-    args::ValueFlag<int> heightArg(parser, "height",
-                                 "height (1024)",
-                                 {'h', "height"}, 1024);
     args::HelpFlag help(parser, "help", "Display this help menu", {'h', "help"});
 
     try {
@@ -234,8 +228,6 @@ int main(int argc, char** argv) {
     }
 
     std::string inputJsonFileName = args::get(inputJson);
-    int width = args::get(widthArg);
-    int height = args::get(heightArg);
     std::ifstream ifs(inputJsonFileName);
     nlohmann::json jsonObj;
     if (!ifs) {
@@ -245,11 +237,14 @@ int main(int argc, char** argv) {
     ifs >> jsonObj;
     ifs.close();
 
-    int mSamples = jsonObj["maxSamples"];
-    int wWidth = jsonObj["windowWidth"];
-    int wHeight = jsonObj["windowHeight"];
+    int maxSamples = jsonObj["maxSamples"];
+    int windowWidth = jsonObj["windowWidth"];
+    int windowHeight = jsonObj["windowHeight"];
+    std::string imageType = jsonObj["imageType"];
+    std::string basePolyhedron = jsonObj["basePolyhedron"];
+    int angleType = jsonObj["angleType"];
     printf("max samples %d  w x h %d x %d\n",
-           mSamples, wWidth, wHeight);
+           maxSamples, windowWidth, windowHeight);
 
 // Initialise GLFW
 	if( !glfwInit() )
@@ -266,8 +261,7 @@ int main(int argc, char** argv) {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_VISIBLE, 0);
 
-	// Open a window and create its OpenGL context
-	window = glfwCreateWindow( 1024, 768, "Fractal", NULL, NULL);
+	window = glfwCreateWindow( windowWidth, windowHeight, "Fractal", NULL, NULL);
 	if( window == NULL ){
 		fprintf( stderr, "Failed to open GLFW window." );
 		getchar();
@@ -276,10 +270,6 @@ int main(int argc, char** argv) {
 	}
 	glfwMakeContextCurrent(window);
 
-    // We would expect width and height to be 1024 and 768
-    int windowWidth = 1024;
-    int windowHeight = 768;
-    // But on MacOS X with a retina screen it'll be 1024*2 and 768*2, so we get the actual framebuffer size:
     glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
 
 	// Initialize GLEW
@@ -298,20 +288,29 @@ int main(int argc, char** argv) {
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
 
-	// Create and compile our GLSL program from the shaders
-//    GLuint programID = LoadShaders( "./src/shaders/renderToTexture.vert",
-//                                    "./src/shaders/renderToTexture.frag" );
-    //printf("gen cubeA\n");
-    //CubeA cubeA(0.1, 0.6);
-    //CubeB cubeB(0.1, 0.6);
-    CubeC cubeC(0.1, 0.6);
-    //printf("cubeA planes zb %f zc %f\n", cubeA.zb, cubeA.zc);
-
+    Sphairahedron *sphairahedron;
+    
+    if(basePolyhedron == "cube") {
+        // if(angleType == 0) {
+        //     sphairahedron = new CubeA(0.1, 0.6);
+        // } else if (angleType == 1) {
+        //     sphairahedron = new CubeB(0.1, 0.6);
+        // }
+        sphairahedron = new CubeC(0.1, 0.6);
+    }
+    std::cout << "cubeC " << sphairahedron->numFaces << std::endl;
     std::string source;
-    //std::ifstream FragmentShaderStream("./src/shaders/finiteLimitset.jinja.frag", std::ios::in);
-	std::ifstream FragmentShaderStream("./src/shaders/prism.jinja.frag", std::ios::in);
-    //std::ifstream FragmentShaderStream("./src/shaders/limitset.jinja.frag", std::ios::in);
-    //std::ifstream FragmentShaderStream("./src/shaders/finiteSphairahedron.jinja.frag", std::ios::in);
+    std::ifstream FragmentShaderStream;
+    if(imageType == "infiniteSphairahedron") {
+        FragmentShaderStream = std::ifstream("./src/shaders/prism.jinja.frag", std::ios::in);
+    } else if (imageType == "finiteSphairahedron") {
+        FragmentShaderStream = std::ifstream("./src/shaders/finiteSphairahedron.jinja.frag", std::ios::in);
+    } else if (imageType == "finiteLimitSet") {
+        FragmentShaderStream = std::ifstream("./src/shaders/finiteLimitset.jinja.frag", std::ios::in);        
+    } else { // (imageType == "infiniteLimitSet")
+        FragmentShaderStream = std::ifstream("./src/shaders/limitset.jinja.frag", std::ios::in);
+    }
+
     if(FragmentShaderStream.is_open()){
 		std::stringstream sstr;
 		sstr << FragmentShaderStream.rdbuf();
@@ -321,8 +320,8 @@ int main(int argc, char** argv) {
     jinja2::Template tpl;
     tpl.Load(source);
 
-    std::string result = tpl.RenderAsString(cubeC.getShaderTemplateContext()).value();
-    printf("rendered result\n %s\n", result.c_str());
+    std::string result = tpl.RenderAsString(sphairahedron->getShaderTemplateContext()).value();
+    //printf("rendered result\n %s\n", result.c_str());
     GLuint programID = LoadShaders("./src/shaders/renderToTexture.vert",
                                    result);
 
@@ -337,13 +336,13 @@ int main(int argc, char** argv) {
     GLuint resolutionID = glGetUniformLocation(programID,
                                                "u_resolution");
     vector<GLuint> uniLocations;
-    Camera camera(Vec3f(0,3,1), Vec3f(0, 0, 0),
+    Camera camera(Vec3f(0,1,3), Vec3f(0, 0, 0),
                   60, Vec3f(0, -1, 0));
 
     GLuint colorWeightID = glGetUniformLocation(programID,
                                               "u_colorWeight");
     vector<GLuint> prismPlanes;
-    for(int i = 0; i < cubeC.numPlanes; i++) {
+    for(int i = 0; i < sphairahedron->numPlanes; i++) {
         std::string s1 = "u_prismPlanes["+ std::to_string(i) +"].origin";
         std::string s2 = "u_prismPlanes["+ std::to_string(i) +"].normal";
         prismPlanes.push_back(glGetUniformLocation(programID, s1.c_str()));
@@ -351,7 +350,7 @@ int main(int argc, char** argv) {
     }
 
     vector<GLuint>prismSpheres;
-    for(int i = 0; i < cubeC.numSpheres; i++) {
+    for(int i = 0; i < sphairahedron->numSpheres; i++) {
         std::string s1 = "u_prismSpheres["+ std::to_string(i) +"].center";
         std::string s2 = "u_prismSpheres["+ std::to_string(i) +"].r";
         prismSpheres.push_back(glGetUniformLocation(programID, s1.c_str()));
@@ -359,7 +358,7 @@ int main(int argc, char** argv) {
     }
 
     vector<GLuint> prismDividePlanes;
-    for(int i = 0; i < cubeC.numDividePlanes; i++) {
+    for(int i = 0; i < sphairahedron->numDividePlanes; i++) {
         std::string s1 = "u_dividePlanes["+ std::to_string(i) +"].origin";
         std::string s2 = "u_dividePlanes["+ std::to_string(i) +"].normal";
         prismDividePlanes.push_back(glGetUniformLocation(programID, s1.c_str()));
@@ -369,15 +368,15 @@ int main(int argc, char** argv) {
     // convex sphere is generated by dividePlanes.
     // So we use numDividePlanes
     vector<GLuint> convexSpheres;
-    for(int i = 0; i < cubeC.numDividePlanes; i++) {
+    for(int i = 0; i < sphairahedron->numDividePlanes; i++) {
         std::string s1 = "u_convexSpheres["+ std::to_string(i) +"].center";
-        std::string s2 = "u_cinvexSpheres["+ std::to_string(i) +"].r";
+        std::string s2 = "u_convexSpheres["+ std::to_string(i) +"].r";
         convexSpheres.push_back(glGetUniformLocation(programID, s1.c_str()));
         convexSpheres.push_back(glGetUniformLocation(programID, s2.c_str()));
     }
 
     vector<GLuint> sphairahedronSpheres;
-    for(int i = 0; i < cubeC.numFaces; i++) {
+    for(int i = 0; i < sphairahedron->numFaces; i++) {
         std::string s1 = "u_sphairahedronSpheres["+ std::to_string(i) +"].center";
         std::string s2 = "u_sphairahedronSpheres["+ std::to_string(i) +"].r";
         sphairahedronSpheres.push_back(
@@ -499,12 +498,11 @@ int main(int argc, char** argv) {
                                         "u_renderedTexture");
 
 	float numSamples = 0.0f;
-    int maxSamples = 5;
     float colorWeight = 0.0;
     printf("Rendering...\n");
 	do{
 		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-		glViewport(0,0,windowWidth,windowHeight); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+		glViewport(0,0,windowWidth, windowHeight); // Render on the whole framebuffer, complete from the lower left corner to the upper right
 
 		glUseProgram(programID);
 
@@ -524,72 +522,71 @@ int main(int argc, char** argv) {
         glUniform2f(resolutionID, float(windowWidth),
                     float(windowHeight));
         camera.setUniformValues();
-        for(int i = 0; i < cubeC.numPlanes; i++) {
+        for(int i = 0; i < sphairahedron->numPlanes; i++) {
             glUniform3f(prismPlanes[i * 2],
-                        cubeC.planes[i].p1.x(),
-                        cubeC.planes[i].p1.y(),
-                        cubeC.planes[i].p1.z());
+                        sphairahedron->planes[i].p1.x(),
+                        sphairahedron->planes[i].p1.y(),
+                        sphairahedron->planes[i].p1.z());
             glUniform3f(prismPlanes[i * 2 + 1],
-                        cubeC.planes[i].normal.x(),
-                        cubeC.planes[i].normal.y(),
-                        cubeC.planes[i].normal.z());
+                        sphairahedron->planes[i].normal.x(),
+                        sphairahedron->planes[i].normal.y(),
+                        sphairahedron->planes[i].normal.z());
         }
-
-        for(int i = 0; i < cubeC.numSpheres; i++) {
+        for(int i = 0; i < sphairahedron->numSpheres; i++) {
             glUniform3f(prismSpheres[i * 2],
-                        cubeC.prismSpheres[i].center.x(),
-                        cubeC.prismSpheres[i].center.y(),
-                        cubeC.prismSpheres[i].center.z());
+                        sphairahedron->prismSpheres[i].center.x(),
+                        sphairahedron->prismSpheres[i].center.y(),
+                        sphairahedron->prismSpheres[i].center.z());
             glUniform2f(prismSpheres[i * 2 + 1],
-                        cubeC.prismSpheres[i].r,
-                        cubeC.prismSpheres[i].rSq);
+                        sphairahedron->prismSpheres[i].r,
+                        sphairahedron->prismSpheres[i].rSq);
         }
-
-        for(int i = 0; i < cubeC.numDividePlanes; i++) {
+        for(int i = 0; i < sphairahedron->numDividePlanes; i++) {
             glUniform3f(prismDividePlanes[i * 2],
-                        cubeC.dividePlanes[i].p1.x(),
-                        cubeC.dividePlanes[i].p1.y(),
-                        cubeC.dividePlanes[i].p1.z());
+                        sphairahedron->dividePlanes[i].p1.x(),
+                        sphairahedron->dividePlanes[i].p1.y(),
+                        sphairahedron->dividePlanes[i].p1.z());
             glUniform3f(prismDividePlanes[i * 2 + 1],
-                        cubeC.dividePlanes[i].normal.x(),
-                        cubeC.dividePlanes[i].normal.y(),
-                        cubeC.dividePlanes[i].normal.z());
+                        sphairahedron->dividePlanes[i].normal.x(),
+                        sphairahedron->dividePlanes[i].normal.y(),
+                        sphairahedron->dividePlanes[i].normal.z());
         }
+        
 
-        for(int i = 0; i < cubeC.numDividePlanes; i++) {
+        for(int i = 0; i < sphairahedron->numDividePlanes; i++) {
             glUniform3f(convexSpheres[i * 2],
-                        cubeC.convexSpheres[i].center.x(),
-                        cubeC.convexSpheres[i].center.y(),
-                        cubeC.convexSpheres[i].center.z());
+                        sphairahedron->convexSpheres[i].center.x(),
+                        sphairahedron->convexSpheres[i].center.y(),
+                        sphairahedron->convexSpheres[i].center.z());
             glUniform2f(convexSpheres[i * 2 + 1],
-                        cubeC.convexSpheres[i].r,
-                        cubeC.convexSpheres[i].rSq);
+                        sphairahedron->convexSpheres[i].r,
+                        sphairahedron->convexSpheres[i].rSq);
         }
 
-        for(unsigned int i = 0; i < cubeC.gSpheres.size(); i++) {
+        for(unsigned int i = 0; i < sphairahedron->gSpheres.size(); i++) {
             glUniform3f(sphairahedronSpheres[i * 2],
-                        cubeC.gSpheres[i].center.x(),
-                        cubeC.gSpheres[i].center.y(),
-                        cubeC.gSpheres[i].center.z());
+                        sphairahedron->gSpheres[i].center.x(),
+                        sphairahedron->gSpheres[i].center.y(),
+                        sphairahedron->gSpheres[i].center.z());
             glUniform2f(sphairahedronSpheres[i * 2 + 1],
-                        cubeC.gSpheres[i].r,
-                        cubeC.gSpheres[i].rSq);
+                        sphairahedron->gSpheres[i].r,
+                        sphairahedron->gSpheres[i].rSq);
         }
 
         glUniform3f(inversionSphereCenter,
-                    cubeC.inversionSphere.center.x(),
-                    cubeC.inversionSphere.center.y(),
-                    cubeC.inversionSphere.center.z());
+                    sphairahedron->inversionSphere.center.x(),
+                    sphairahedron->inversionSphere.center.y(),
+                    sphairahedron->inversionSphere.center.z());
         glUniform2f(inversionSphereR,
-                    cubeC.inversionSphere.r,
-                    cubeC.inversionSphere.rSq);
+                    sphairahedron->inversionSphere.r,
+                    sphairahedron->inversionSphere.rSq);
         glUniform3f(boundingSphereCenter,
-                    cubeC.boundingSphere.center.x(),
-                    cubeC.boundingSphere.center.y(),
-                    cubeC.boundingSphere.center.z());
+                    sphairahedron->boundingSphere.center.x(),
+                    sphairahedron->boundingSphere.center.y(),
+                    sphairahedron->boundingSphere.center.z());
         glUniform2f(boundingSphereR,
-                    cubeC.boundingSphere.r,
-                    cubeC.boundingSphere.rSq);
+                    sphairahedron->boundingSphere.r,
+                    sphairahedron->boundingSphere.rSq);
 
         glUniform1i(castShadow, true);
         glUniform3f(lightDirection, -0.7071067811865475,
@@ -599,8 +596,8 @@ int main(int argc, char** argv) {
         glUniform1f(marchingThresholdID, 0.0001);
         glUniform1f(fudgeFactorID, 0.2);
         glUniform1i(maxIterationsID, 50);
-        glUniform1f(boundingPlaneYID, cubeC.boundingPlaneY);
-        //printf("bounding plane %f\n", cubeC.boundingPlaneY);
+        glUniform1f(boundingPlaneYID, sphairahedron->boundingPlaneY);
+        //printf("bounding plane %f\n", sphairahedron->boundingPlaneY);
 
         printf("Done\n");
         glBindTexture(GL_TEXTURE_2D, renderedTextures[1]);
@@ -703,6 +700,6 @@ int main(int argc, char** argv) {
 	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
 
-
+    delete sphairahedron;
     return 0;
 }

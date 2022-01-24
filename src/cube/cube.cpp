@@ -3,7 +3,13 @@
 #include "../sphere.h"
 
 
-Cube::Cube(float _zb, float _zc) : Sphairahedron(_zb, _zc) { 
+Cube::Cube(float _zb, float _zc) : Sphairahedron(_zb, _zc) {
+    numFaces = 6;
+    numSpheres = 3;
+    numPlanes = 3;
+    vertexIndexes = vector<vector<int>>{{0, 1, 2}, {0, 3, 4}, {2, 4, 5}, {0, 1, 3},
+                                        {3, 4, 5}, {1, 2, 5}, {1, 3, 5}, {0, 2, 4}};
+    numVertexes = vertexIndexes.size();
 }
 
 void Cube::computeGenSpheres() {

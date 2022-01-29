@@ -237,6 +237,7 @@ int main(int argc, char** argv) {
     ifs >> jsonObj;
     ifs.close();
 
+    std::string filename = jsonObj["filename"];
     int maxSamples = jsonObj["maxSamples"];
     int windowWidth = jsonObj["windowWidth"];
     int windowHeight = jsonObj["windowHeight"];
@@ -714,7 +715,6 @@ int main(int argc, char** argv) {
         textureData
 	);
 
-    std::string filename = "limitset.png";
     stbi_write_png(filename.c_str(), windowWidth, windowHeight,
                    4, textureData, 0);
     printf("Image was written.\n");

@@ -439,9 +439,7 @@ int main(int argc, char** argv) {
     GLuint boundingPlaneYID = glGetUniformLocation(programID,
                                                    "u_boundingPlaneY");
 
-    printf("Camera uniform... \n");
     camera.getUniformLocations(programID);
-    printf("Done %zu\n", uniLocations.size());
     GLfloat square[] = {-1, -1,
                         -1, 1,
                         1, -1,
@@ -633,7 +631,7 @@ int main(int argc, char** argv) {
         glUniform1f(boundingPlaneYID, sphairahedron->boundingPlaneY);
         //printf("bounding plane %f\n", sphairahedron->boundingPlaneY);
 
-        printf("Done\n");
+        //printf("Done\n");
         glBindTexture(GL_TEXTURE_2D, renderedTextures[1]);
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                              renderedTextures[1], 0);
@@ -689,8 +687,8 @@ int main(int argc, char** argv) {
 
 		glDisableVertexAttribArray(0);
         glBindTexture(GL_TEXTURE_2D, 0);
-
-        if(int(numSamples) == maxSamples) break;
+        printf("Sampled %d/%d\n", int(numSamples+1), maxSamples);
+        if(int(numSamples+1) == maxSamples) break;
         numSamples++;
 		// Swap buffers
 		glfwSwapBuffers(window);

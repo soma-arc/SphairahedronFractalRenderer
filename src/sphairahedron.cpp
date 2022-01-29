@@ -8,7 +8,6 @@ const float RT_3 = sqrt(3);
 const float RT_3_INV = 1.0 / sqrt(3);
 
 Sphairahedron::Sphairahedron(float _zb, float _zc) {
-    printf("update\n");
     zb = _zb;
     zc = _zc;
     //update();
@@ -62,7 +61,7 @@ void Sphairahedron::addSphereIfNotExists(vector<Sphere>& spheres, Sphere sphere)
     for (Sphere s : spheres) {
         if (abs(s.r - sphere.r) < 0.00001 &&
             vdistance(s.center, sphere.center) < 0.00001) {
-            printf("duplicate\n");
+            //printf("duplicate\n");
         }
     }
     spheres.push_back(sphere);
@@ -117,7 +116,7 @@ void Sphairahedron::computeConvexSphere() {
 }
 
 void Sphairahedron::computeBoundingVolume() {
-    printf("in compute bounding volume\n");
+    //printf("in compute bounding volume\n");
     boundingPlaneY = -99999999999;
     float boundingPlaneMinY = 99999999999;
     for (Sphere s : prismSpheres) {
@@ -145,18 +144,9 @@ void Sphairahedron::computeBoundingVolume() {
 void Sphairahedron::computeInversionSphere() {} // computed by cube.cpp
 
 Plane Sphairahedron::computePlane(int vertexIdx1, int vertexIdx2, int vertexIdx3) {
-    printf("in computePlane\n");
-    printf("vert\n");
-    printf("%f, %f, %f\n",
-           vertexes[vertexIdx1].x(),
-           vertexes[vertexIdx1].y(),
-           vertexes[vertexIdx1].z());
     Vec3f p1 = inversionSphere.invertOnPoint(vertexes[vertexIdx1]);
-    printf("computePlane2\n");
     Vec3f p2 = inversionSphere.invertOnPoint(vertexes[vertexIdx2]);
-    printf("computePlane3\n");
     Vec3f p3 = inversionSphere.invertOnPoint(vertexes[vertexIdx3]);
-    printf("Done inversions\n");
     Vec3f v1 = p2 - p1;
     Vec3f v2 = p3 - p1;
     Vec3f normal = vnormalize(vcross(v1, v2));
@@ -167,13 +157,9 @@ Plane Sphairahedron::computePlane(int vertexIdx1, int vertexIdx2, int vertexIdx3
 }
 
 void Sphairahedron::computeDividePlanes() {
-    printf("clear\n");
     dividePlanes.clear();
-    printf("compute\n");
     Plane p = computePlane(0, 3, 5);
-    printf("push_back\n");
     dividePlanes.push_back(p);
-    printf("Done\n");
 }
 
 void Sphairahedron::computeExcavationSpheres() {

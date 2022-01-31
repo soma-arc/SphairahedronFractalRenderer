@@ -10,7 +10,6 @@ const float RT_3_INV = 1.0 / sqrt(3);
 Sphairahedron::Sphairahedron(float _zb, float _zc) {
     zb = _zb;
     zc = _zc;
-    //update();
 }
 
 Vec3f Sphairahedron::computeIdealVertex(Sphere a, Sphere b, Sphere c) {

@@ -14,6 +14,7 @@ using namespace std;
 #include "camera.h"
 #include "./cube/cube.h"
 #include "./cake/cake.h"
+#include "./pentahedralPrism/pentahedralPrism.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -338,6 +339,31 @@ int main(int argc, char** argv) {
         default:
             printf("This angle type is not defined");
             sphairahedron = new CakeA(param1);
+            break;
+        }
+    } else if(basePolyhedron == "pentahedralPrism") {
+        switch (angleType) {
+        case 0:
+            sphairahedron = new PentahedralPrismA(param1);
+            break;
+        case 1:
+            sphairahedron = new PentahedralPrismB(param1);
+            break;
+        case 2:
+            sphairahedron = new PentahedralPrismC(param1);
+            break;
+        case 3:
+            sphairahedron = new PentahedralPrismD(param1);
+            break;
+        case 4:
+            sphairahedron = new PentahedralPrismE(param1);
+            break;
+        case 5:
+            sphairahedron = new PentahedralPrismF(param1);
+            break;
+        default:
+            printf("This angle type is not defined");
+            sphairahedron = new PentahedralPrismA(param1);
             break;
         }
     }

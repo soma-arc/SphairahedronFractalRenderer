@@ -3,6 +3,7 @@ sources = {
    "src/sphairahedron.cpp",
    "src/cube/cube.cpp",
    "src/cake/cake.cpp",
+   "src/pentahedralPrism/pentahedralPrism.cpp",
    "src/sphere.cpp",
    "src/plane.cpp"
 }

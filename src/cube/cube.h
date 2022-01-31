@@ -11,6 +11,7 @@ public:
     virtual jinja2::ValuesMap getShaderTemplateContext();
     virtual void computeVertexes();
     virtual void computeSeedSpheres();
+    virtual void computeDividePlanes();
 };
 
 class CubeA : public Cube {

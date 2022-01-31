@@ -19,7 +19,7 @@ public:
     void computeInversionSphere();
     void computeGenSpheres();
     void computeVertexes();
-    void computeDividePlanes();
+    virtual void computeDividePlanes();
     void computeExcavationSpheres();
     void computeSeedSpheres();
     void computeConvexSphere();
@@ -60,7 +60,12 @@ public:
     vector<Sphere> excavationSpheres;
     float SQRT_3 = sqrt(3);
     float SQRT_2 = sqrt(2);
-
+    float SQRT_6 = sqrt(6);
+    float SIN_PI_12 = (SQRT_6 - SQRT_2) * 0.25;
+    float COS_PI_12 = (SQRT_6 + SQRT_2) * 0.25;
+    float COS_5_PI_12 = SIN_PI_12;
+    float SIN_5_PI_12 = COS_PI_12;
+    
     static vector<Plane> PRISM_PLANES_333;
     static vector<Plane> PRISM_PLANES_236;
     static vector<Plane> PRISM_PLANES_244;

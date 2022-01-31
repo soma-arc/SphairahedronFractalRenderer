@@ -158,7 +158,7 @@ Plane Sphairahedron::computePlane(int vertexIdx1, int vertexIdx2, int vertexIdx3
 
 void Sphairahedron::computeDividePlanes() {
     dividePlanes.clear();
-    Plane p = computePlane(0, 3, 5);
+    Plane p = computePlane(0, 1, 2);
     dividePlanes.push_back(p);
 }
 

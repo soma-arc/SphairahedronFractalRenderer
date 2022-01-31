@@ -30,6 +30,12 @@ void Cube::computeInversionSphere() {
          prismSpheres[2].r);
 }
 
+void Cube::computeDividePlanes() {
+    dividePlanes.clear();
+    Plane p = computePlane(0, 3, 5);
+    dividePlanes.push_back(p);
+}
+
 jinja2::ValuesMap Cube::getShaderTemplateContext() {
     jinja2::ValuesMap data;
     data["numPrismSpheres"] = numSpheres;
@@ -65,9 +71,7 @@ void Cube::computeSeedSpheres() {
 }
 
 CubeA::CubeA(float _zb, float _zc) : Cube(_zb, _zc) {
-    printf("cubeA d\n");
     planes = Sphairahedron::PRISM_PLANES_333;
-    printf("pre update\n");
     update();
 }
 

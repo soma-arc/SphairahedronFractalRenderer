@@ -13,6 +13,7 @@ using namespace std;
 #include "nlohmann/json.hpp"
 #include "camera.h"
 #include "./cube/cube.h"
+#include "./cake/cake.h"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
@@ -323,7 +324,27 @@ int main(int argc, char** argv) {
             sphairahedron = new CubeA(param1, param2);
             break;
         }
+    } else if(basePolyhedron == "cake") {
+        switch (angleType) {
+        case 0:
+            sphairahedron = new CakeA(param1);
+            break;
+        case 1:
+            sphairahedron = new CakeB(param1);
+            break;
+        case 2:
+            sphairahedron = new CakeC(param1);
+            break;
+        default:
+            printf("This angle type is not defined");
+            sphairahedron = new CakeA(param1);
+            break;
+        }
     }
+    // printf("plane %f, %f, %f\n",
+    //        sphairahedron->dividePlanes[0].normal.x(),
+    //        sphairahedron->dividePlanes[0].normal.y(),
+    //        sphairahedron->dividePlanes[0].normal.z());
 
     std::string source;
     std::ifstream FragmentShaderStream;

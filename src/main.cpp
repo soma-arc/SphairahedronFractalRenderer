@@ -371,10 +371,7 @@ int main(int argc, char** argv) {
             break;
         }
     }
-    // printf("plane %f, %f, %f\n",
-    //        sphairahedron->dividePlanes[0].normal.x(),
-    //        sphairahedron->dividePlanes[0].normal.y(),
-    //        sphairahedron->dividePlanes[0].normal.z());
+
 
     std::string source;
     std::ifstream FragmentShaderStream;
@@ -382,7 +379,21 @@ int main(int argc, char** argv) {
         FragmentShaderStream = std::ifstream("./src/shaders/prism.jinja.frag", std::ios::in);
     } else if (imageType == "finiteSphairahedron") {
         FragmentShaderStream = std::ifstream("./src/shaders/finiteSphairahedron.jinja.frag", std::ios::in);
+        cameraJson["position"][0] = sphairahedron->convexSpheres[0].center.x() +
+            sphairahedron->convexSpheres[0].r * 2.;
+        cameraJson["position"][1] = sphairahedron->convexSpheres[0].center.y();
+        cameraJson["position"][2] = sphairahedron->convexSpheres[0].center.z();
+        cameraJson["target"][0] = sphairahedron->convexSpheres[0].center.x();
+        cameraJson["target"][1] = sphairahedron->convexSpheres[0].center.y();
+        cameraJson["target"][2] = sphairahedron->convexSpheres[0].center.z();
     } else if (imageType == "finiteLimitSet") {
+        cameraJson["position"][0] = sphairahedron->convexSpheres[0].center.x() +
+            sphairahedron->convexSpheres[0].r * 3.;
+        cameraJson["position"][1] = sphairahedron->convexSpheres[0].center.y();
+        cameraJson["position"][2] = sphairahedron->convexSpheres[0].center.z();
+        cameraJson["target"][0] = sphairahedron->convexSpheres[0].center.x();
+        cameraJson["target"][1] = sphairahedron->convexSpheres[0].center.y();
+        cameraJson["target"][2] = sphairahedron->convexSpheres[0].center.z();
         FragmentShaderStream = std::ifstream("./src/shaders/finiteLimitset.jinja.frag", std::ios::in);        
     } else { // (imageType == "infiniteLimitSet")
         FragmentShaderStream = std::ifstream("./src/shaders/limitset.jinja.frag", std::ios::in);

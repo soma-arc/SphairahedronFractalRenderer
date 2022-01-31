@@ -27,7 +27,7 @@ void Cake::computeGenSpheres() {
 void Cake::computeInversionSphere() {
     inversionSphere = Sphere(
         prismSpheres[2].center.x(),
-        prismSpheres[2].center.y(),
+        prismSpheres[2].center.y() + 1.2,
         prismSpheres[2].center.z(),
         0.5);
 }

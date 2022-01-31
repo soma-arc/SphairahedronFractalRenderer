@@ -23,11 +23,25 @@ void Cube::computeGenSpheres() {
 }
 
 void Cube::computeInversionSphere() {
+    float maxY = prismSpheres[0].center.y();
+    int index = 0;
+    if(maxY < prismSpheres[1].center.y()) {
+        maxY = prismSpheres[1].center.y();
+        index = 1;
+    }
+    if(maxY < prismSpheres[2].center.y()) {
+        maxY = prismSpheres[2].center.y();
+        index = 2;
+    }
     inversionSphere = Sphere(
-        -prismSpheres[2].center.x(),
-        -prismSpheres[2].center.y(),
-         prismSpheres[2].center.z(),
-         prismSpheres[2].r);
+        (prismSpheres[0].center.x() +
+         prismSpheres[1].center.x() +
+         prismSpheres[2].center.x())/3.,
+        maxY + prismSpheres[index].r + 0.01,
+        (prismSpheres[0].center.z() +
+         prismSpheres[1].center.z() +
+         prismSpheres[2].center.z())/3.,
+        prismSpheres[index].r);
 }
 
 void Cube::computeDividePlanes() {

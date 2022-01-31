@@ -3,10 +3,10 @@
     "maxSamples": 5,
     "windowWidth": 1024,
     "windowHeight": 512,
-    "basePolyhedron": "cube",
+    "basePolyhedron": "cake",
     "imageType": "infiniteSphairahedron",
-    "angleType": 6,
-    "param1": 0.1,
+    "angleType": 1,
+    "param1": 0.5686007823237977,
     "param2": 0.1,
     "camera": {
         "position": [
@@ -25,6 +25,11 @@
             -1,
             0
         ]
+    },
+    "render": {
+        "maxIterations": 100,
+        "fudgeFactor": 0.2,
+        "marchingThreshold": 0.0001
     },
     "inversionSphere": {
         "type": "default",

@@ -103,7 +103,6 @@ Sphere Sphere::invertOnSphere(Sphere invertSphere) {
 }
 
 Sphere Sphere::invertOnPlane(Plane plane) {
-    printf("invert On plane\n");
     return Sphere::FromPoints(invertOnPoint(plane.p1),
                               invertOnPoint(plane.p2),
                               invertOnPoint(plane.p3),

@@ -249,7 +249,11 @@ int main(int argc, char** argv) {
     float param1 = jsonObj["param1"];
     float param2 = jsonObj["param2"];
     nlohmann::json cameraJson = jsonObj["camera"];
-
+    nlohmann::json renderJson = jsonObj["render"];
+    int maxIterations = renderJson["maxIterations"];
+    float fudgeFactor = renderJson["fudgeFactor"];
+    float marchingThreshold = renderJson["marchingThreshold"];
+    
     printf("max samples %d  w x h %d x %d\n",
            maxSamples, windowWidth, windowHeight);
 
@@ -672,9 +676,9 @@ int main(int argc, char** argv) {
                     -0.7071067811865475,
                     0);
         glUniform2f(aoID, 0.0968, 2.0);
-        glUniform1f(marchingThresholdID, 0.0001);
-        glUniform1f(fudgeFactorID, 0.2);
-        glUniform1i(maxIterationsID, 50);
+        glUniform1f(marchingThresholdID, marchingThreshold);
+        glUniform1f(fudgeFactorID, fudgeFactor);
+        glUniform1i(maxIterationsID, maxIterations);
         glUniform1f(boundingPlaneYID, sphairahedron->boundingPlaneY);
         //printf("bounding plane %f\n", sphairahedron->boundingPlaneY);
 
